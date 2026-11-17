@@ -1,0 +1,34 @@
+# ---- Secrets : ne JAMAIS envoyer sur GitHub ----
+.env
+**/.env
+backend/.env.backup
+backend/.env.production
+
+# ---- Dépendances (se réinstallent avec composer install / npm install) ----
+backend/vendor/
+**/node_modules/
+
+# ---- Fichiers générés ----
+frontend/dist/
+backend/public/storage
+backend/public/build
+backend/storage/logs/*
+!backend/storage/logs/.gitignore
+backend/storage/app/public/*
+!backend/storage/app/public/.gitignore
+backend/storage/framework/cache/*
+backend/storage/framework/sessions/*
+backend/storage/framework/views/*
+backend/.phpunit.result.cache
+*.log
+
+# ---- Sauvegardes et fichiers de travail locaux ----
+_ancien/
+verif-git.bat
+verifier-admin.bat
+
+# ---- Système / éditeurs ----
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/

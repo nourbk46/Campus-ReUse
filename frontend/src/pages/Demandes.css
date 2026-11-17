@@ -1,0 +1,128 @@
+/* Sprint 3 — demandes et propositions (complète Annonces.css) */
+
+/* Mes demandes */
+.dem-liste { list-style: none; padding: 0; margin: 0; display: grid; gap: 12px; }
+.dem-item {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto auto;
+  align-items: center;
+  gap: 20px;
+  background: #fff;
+  border: 1px solid #e2e8f0;
+  border-radius: 14px;
+  padding: 18px 20px;
+}
+.dem-cloturee { background: #f8fafc; }
+.dem-cloturee h3 { color: #64748b; }
+.dem-infos { min-width: 0; }
+.dem-titre { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin-bottom: 4px; }
+.dem-titre h3 { margin: 0; font-size: 16px; }
+.dem-infos p { font-size: 13px; }
+.dem-statut-ouverte { background: #eff4ff; color: #1d4ed8; }
+.dem-statut-cloturee { background: #f1f5f9; color: #475569; }
+
+.dem-match { min-width: 150px; text-align: right; }
+.dem-match-lien, .dem-match-vide { display: grid; font-size: 14px; line-height: 1.3; }
+.dem-match-lien { color: #1d4ed8; text-decoration: none; }
+.dem-match-lien:hover { text-decoration: none; }
+.dem-match-lien:hover strong { text-decoration: underline; }
+.dem-match-lien strong { font-size: 18px; }
+.dem-match small, .dem-match-vide small { color: #64748b; font-size: 12px; }
+.dem-match-vide { color: #475569; }
+
+/* Formulaire */
+.champ .aide { color: #64748b; font-size: 12.5px; }
+.dem-check { display: flex !important; align-items: center; gap: 10px; font-weight: 500 !important; color: #334155; cursor: pointer; }
+.dem-check input { width: 18px !important; height: 18px; accent-color: #2563eb; }
+.dem-budget { display: flex; align-items: center; gap: 10px; max-width: 220px; margin-top: 8px; }
+.dem-budget span { color: #475569; font-weight: 600; }
+
+/* Propositions */
+.prop-filtre {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-bottom: 18px;
+  font-size: 14px;
+}
+.prop-filtre label { font-weight: 600; color: #334155; }
+.prop-filtre select {
+  min-width: 260px;
+  padding: 9px 12px;
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+  font: 14px "Inter", system-ui, sans-serif;
+  background: #fff;
+}
+.prop-filtre .muted { margin-left: auto; }
+
+.prop-liste { list-style: none; padding: 0; margin: 0; display: grid; gap: 14px; }
+.prop-carte {
+  display: grid;
+  grid-template-columns: 150px minmax(0, 1fr) 140px;
+  gap: 20px;
+  align-items: stretch;
+  background: #fff;
+  border: 1px solid #e2e8f0;
+  border-radius: 14px;
+  padding: 16px;
+}
+.prop-photo {
+  display: grid;
+  place-items: center;
+  aspect-ratio: 1;
+  border-radius: 10px;
+  overflow: hidden;
+  background: #eff4ff;
+  font-size: 36px;
+}
+.prop-photo img { width: 100%; height: 100%; object-fit: cover; }
+.prop-corps { display: grid; gap: 8px; align-content: start; min-width: 0; }
+.prop-pour { margin: 0; color: #64748b; font-size: 12.5px; }
+.prop-pour strong { color: #334155; font-weight: 600; }
+.prop-titre { color: inherit; }
+.prop-titre h3 { margin: 0; font-size: 17px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.prop-meta { margin: 0; display: flex; align-items: center; gap: 10px; flex-wrap: wrap; font-size: 13px; color: #64748b; }
+.prop-prix { font-size: 15px; font-weight: 700; color: #1d4ed8; }
+
+.prop-criteres { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; margin: 6px 0 0; }
+.prop-criteres dt { font-size: 12px; color: #64748b; margin-bottom: 4px; }
+.prop-criteres dd { margin: 0; display: flex; align-items: center; gap: 8px; }
+.prop-jauge { flex: 1; height: 6px; border-radius: 3px; background: #eef2f7; overflow: hidden; }
+.prop-jauge span { display: block; height: 100%; border-radius: 3px; background: #2563eb; }
+.prop-pts { font-size: 12px; font-weight: 600; color: #334155; font-variant-numeric: tabular-nums; white-space: nowrap; }
+
+.prop-mots { margin: 0; font-size: 12.5px; color: #64748b; display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+.prop-mots span { background: #f1f5f9; color: #334155; border-radius: 6px; padding: 2px 8px; font-weight: 500; }
+
+.prop-score {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  border-radius: 12px;
+  padding: 12px;
+  text-align: center;
+}
+.prop-score strong { font-size: 36px; line-height: 1; letter-spacing: -1px; font-variant-numeric: tabular-nums; }
+.prop-score > span { font-size: 13px; opacity: .8; }
+.prop-score small { margin-top: 8px; font-size: 11.5px; font-weight: 600; line-height: 1.3; }
+.prop-score-fort { background: #eff4ff; color: #1d4ed8; }
+.prop-score-moyen { background: #f1f5f9; color: #1e293b; }
+.prop-score-faible { background: #f8fafc; color: #475569; border: 1px dashed #cbd5e1; }
+
+@media (max-width: 900px) {
+  .dem-item { grid-template-columns: 1fr; gap: 12px; }
+  .dem-match { text-align: left; }
+  .prop-carte { grid-template-columns: 110px minmax(0, 1fr); }
+  .prop-score { grid-column: 1 / -1; flex-direction: row; gap: 6px; justify-content: flex-start; }
+  .prop-score small { margin: 0 0 0 auto; }
+  .prop-criteres { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+@media (max-width: 600px) {
+  .prop-carte { grid-template-columns: 1fr; }
+  .prop-photo { aspect-ratio: 16 / 9; }
+  .prop-filtre select { min-width: 0; width: 100%; }
+  .prop-filtre .muted { margin-left: 0; }
+}

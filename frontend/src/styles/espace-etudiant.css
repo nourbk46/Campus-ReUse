@@ -1,0 +1,129 @@
+/* ==========================================================================
+   Espace étudiant — habillage commun (même style que l'accueil et le dashboard admin)
+   S'applique à : Dashboard, Annonces, Mes annonces, Mes demandes, Propositions,
+   Messages, Réservations, Favoris, Profil, formulaires.
+   ========================================================================== */
+
+/* Pages plus larges (avant : 960 px) */
+body .container { max-width: 1240px; }
+
+/* ---------- Bandeau d'en-tête coloré ---------- */
+main.annonces-page > .annonces-header,
+main.db-page > .db-header,
+main.profile-page .hero-main {
+  position: relative;
+  overflow: hidden;
+  padding: 28px 32px;
+  border-radius: 20px;
+  color: #fff;
+  background:
+    radial-gradient(70% 120% at 100% 0%, rgba(45, 212, 191, .30), transparent 60%),
+    radial-gradient(80% 120% at 0% 100%, rgba(59, 130, 246, .45), transparent 65%),
+    linear-gradient(135deg, #1d4ed8 0%, #1e3a8a 60%, #0f172a 100%);
+  box-shadow: 0 18px 40px -22px rgba(30, 58, 138, .65);
+  align-items: center;
+}
+/* petit motif décoratif */
+main.annonces-page > .annonces-header::after,
+main.db-page > .db-header::after {
+  content: "♻";
+  position: absolute;
+  right: 26px;
+  bottom: -38px;
+  font-size: 150px;
+  line-height: 1;
+  color: rgba(255, 255, 255, .06);
+  pointer-events: none;
+}
+main.annonces-page > .annonces-header > *,
+main.db-page > .db-header > * { position: relative; z-index: 1; }
+
+main.annonces-page > .annonces-header h1,
+main.db-page > .db-header h1,
+main.profile-page .hero-main h1 { color: #fff; }
+main.annonces-page > .annonces-header .muted,
+main.db-page > .db-header .db-sub,
+main.db-page > .db-header .db-date,
+main.profile-page .hero-main .muted { color: #dbeafe; }
+
+main.annonces-page > .annonces-header .eyebrow {
+  display: inline-block;
+  padding: 5px 11px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, .14);
+  border: 1px solid rgba(255, 255, 255, .25);
+  color: #fff;
+  font-size: 11.5px;
+  letter-spacing: 1px;
+}
+
+/* Boutons dans le bandeau */
+main.annonces-page > .annonces-header .ann-btn-primary,
+main.db-page > .db-header .db-btn-primary,
+main.profile-page .hero-main .btn:not(.btn-danger) {
+  background: #fff;
+  border-color: #fff;
+  color: #1d4ed8;
+  box-shadow: 0 8px 20px -10px rgba(0, 0, 0, .5);
+}
+main.annonces-page > .annonces-header .ann-btn-primary:hover,
+main.db-page > .db-header .db-btn-primary:hover { background: #eff6ff; }
+main.annonces-page > .annonces-header .ann-btn:not(.ann-btn-primary),
+main.db-page > .db-header .db-btn-ghost {
+  background: rgba(255, 255, 255, .12);
+  border-color: rgba(255, 255, 255, .3);
+  color: #fff;
+}
+main.annonces-page > .annonces-header .ann-btn:not(.ann-btn-primary):hover,
+main.db-page > .db-header .db-btn-ghost:hover { background: rgba(255, 255, 255, .22); }
+
+/* Profil : bandeau en haut de la carte, chiffres en dessous */
+main.profile-page .profile-hero { border-radius: 20px; box-shadow: 0 1px 2px rgba(15, 23, 42, .05), 0 12px 30px -18px rgba(15, 23, 42, .25); }
+main.profile-page .hero-main { border-radius: 0; box-shadow: none; }
+main.profile-page .hero-main .avatar-lg { border: 3px solid rgba(255, 255, 255, .85); box-shadow: 0 8px 24px -8px rgba(0, 0, 0, .45); }
+main.profile-page .hero-main .badge { background: rgba(255, 255, 255, .16); border-color: rgba(255, 255, 255, .3); color: #fff; }
+main.profile-page .hero-main .badge.warn { background: #fef3c7; color: #92400e; border-color: #fde68a; }
+
+/* ---------- Onglets (Réservations, Propositions…) ---------- */
+main.annonces-page [role="tablist"] { margin-top: 4px; }
+
+/* ---------- Cartes : un peu plus de relief ---------- */
+main.annonces-page .annonce-card,
+main.annonces-page .dem-carte,
+main.annonces-page .resa-carte {
+  border-radius: 16px;
+  transition: transform .15s ease, box-shadow .15s ease, border-color .15s ease;
+}
+main.annonces-page .annonce-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 14px 30px -16px rgba(15, 23, 42, .3);
+  border-color: #c7d6fb;
+}
+
+/* ---------- Formulaires (déposer une annonce / une demande) ---------- */
+main.form-page { margin-left: auto; margin-right: auto; }
+main.form-page .annonce-form {
+  position: relative;
+  border-radius: 20px;
+  overflow: hidden;
+  box-shadow: 0 1px 2px rgba(15, 23, 42, .05), 0 16px 36px -20px rgba(15, 23, 42, .3);
+}
+main.form-page .annonce-form::before {
+  content: "";
+  position: absolute;
+  inset: 0 0 auto 0;
+  height: 6px;
+  background: linear-gradient(90deg, #2563eb, #0d9488);
+}
+
+/* ---------- Mobile ---------- */
+@media (max-width: 650px) {
+  main.annonces-page > .annonces-header,
+  main.db-page > .db-header,
+  main.profile-page .hero-main { padding: 22px 20px; border-radius: 16px; }
+  main.annonces-page > .annonces-header::after,
+  main.db-page > .db-header::after { display: none; }
+}
+@media (prefers-reduced-motion: reduce) {
+  main.annonces-page .annonce-card { transition: none; }
+}

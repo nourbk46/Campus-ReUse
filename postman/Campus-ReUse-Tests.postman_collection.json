@@ -1,0 +1,5742 @@
+{
+  "info": {
+    "name": "Campus ReUse - Tests Sprints 1 à 5",
+    "description": "Tests automatiques des API des Sprints 1 et 2.\n\nAvant de lancer : MySQL démarré, backend lancé (dbg.bat), Postman → Settings → General → Working directory = C:\\projets\\campus-reuse\\postman (pour la photo de test).\n\nLancer : clic droit sur la collection → Run collection → Run. Chaque exécution crée un compte de test, puis le supprime à la fin.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:8000/api"
+    },
+    {
+      "key": "runId",
+      "value": ""
+    },
+    {
+      "key": "email",
+      "value": ""
+    },
+    {
+      "key": "password",
+      "value": ""
+    },
+    {
+      "key": "token",
+      "value": ""
+    },
+    {
+      "key": "tokenAdmin",
+      "value": ""
+    },
+    {
+      "key": "categorieId",
+      "value": ""
+    },
+    {
+      "key": "annonceId",
+      "value": ""
+    },
+    {
+      "key": "photoId",
+      "value": ""
+    },
+    {
+      "key": "demandeId",
+      "value": ""
+    },
+    {
+      "key": "annonce2Id",
+      "value": ""
+    },
+    {
+      "key": "annonce3Id",
+      "value": ""
+    },
+    {
+      "key": "annonce4Id",
+      "value": ""
+    },
+    {
+      "key": "conversationId",
+      "value": ""
+    },
+    {
+      "key": "reservationId",
+      "value": ""
+    },
+    {
+      "key": "reservation2Id",
+      "value": ""
+    },
+    {
+      "key": "annonce5Id",
+      "value": ""
+    },
+    {
+      "key": "adminId",
+      "value": ""
+    },
+    {
+      "key": "testUserId",
+      "value": ""
+    },
+    {
+      "key": "catTestId",
+      "value": ""
+    },
+    {
+      "key": "tokenVendeur",
+      "value": ""
+    },
+    {
+      "key": "emailVendeur",
+      "value": ""
+    }
+  ],
+  "item": [
+    {
+      "name": "0. Préparation",
+      "item": [
+        {
+          "name": "Créer un e-mail de test unique",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const id = Date.now();",
+                  "pm.collectionVariables.set(\"runId\", String(id));",
+                  "pm.collectionVariables.set(\"email\", \"postman\" + id + \"@test.tn\");",
+                  "pm.collectionVariables.set(\"emailVendeur\", \"vendeur\" + (id + 1) + \"@test.tn\"); // id différent : ne gêne pas la recherche du compte de test",
+                  "pm.collectionVariables.set(\"password\", \"password123\");",
+                  "console.log(\"E-mail de test :\", pm.collectionVariables.get(\"email\"));"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"API joignable\", () => pm.response.to.have.status(200));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/categories",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "categories"
+              ]
+            },
+            "description": "Prépare un compte de test nouveau à chaque exécution."
+          }
+        },
+        {
+          "name": "Connexion admin",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Code 200\", () => pm.response.to.have.status(200));",
+                  "const d = pm.response.json();",
+                  "pm.test(\"Rôle admin\", () => pm.expect(d.user.role).to.eql(\"admin\"));",
+                  "pm.collectionVariables.set(\"tokenAdmin\", d.token);",
+                  "pm.collectionVariables.set(\"adminId\", d.user.id);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/login",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "login"
+              ]
+            },
+            "description": "",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"admin@campusreuse.tn\",\n  \"password\": \"admin1234\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "Créer un 2e étudiant (vendeur)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Code 201\", () => pm.response.to.have.status(201));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/register",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Vendeur\",\n  \"prenom\": \"Postman\",\n  \"email\": \"{{emailVendeur}}\",\n  \"password\": \"password123\",\n  \"password_confirmation\": \"password123\",\n  \"filiere\": \"Gestion\",\n  \"niveau\": \"M1\",\n  \"etablissement\": \"ISET Postman\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "Connexion du vendeur",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Code 200\", () => pm.response.to.have.status(200));",
+                  "pm.collectionVariables.set(\"tokenVendeur\", pm.response.json().token);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/login",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"{{emailVendeur}}\",\n  \"password\": \"password123\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "1. Sprint 1 - Comptes",
+      "item": [
+        {
+          "name": "SCRUM-10 · Inscription OK",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Code 201\", () => pm.response.to.have.status(201));",
+                  "pm.test(\"Message de confirmation\", () => pm.expect(pm.response.json().message).to.include(\"e-mail\"));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/register",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "register"
+              ]
+            },
+            "description": "",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Postman\",\n  \"prenom\": \"Test\",\n  \"email\": \"{{email}}\",\n  \"password\": \"{{password}}\",\n  \"password_confirmation\": \"{{password}}\",\n  \"filiere\": \"Informatique\",\n  \"niveau\": \"L3\",\n  \"etablissement\": \"ISET Postman\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "SCRUM-10 · Inscription e-mail déjà utilisé",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Code 422\", () => pm.response.to.have.status(422));",
+                  "pm.test(\"Erreur sur email\", () => pm.expect(pm.response.json().errors).to.have.property(\"email\"));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/register",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "register"
+              ]
+            },
+            "description": "",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"X\",\n  \"prenom\": \"Y\",\n  \"email\": \"{{email}}\",\n  \"password\": \"{{password}}\",\n  \"password_confirmation\": \"{{password}}\",\n  \"filiere\": \"Info\",\n  \"niveau\": \"L1\",\n  \"etablissement\": \"ISET\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "SCRUM-10 · Inscription champs vides / mot de passe court",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Code 422\", () => pm.response.to.have.status(422));",
+                  "const e = pm.response.json().errors;",
+                  "pm.test(\"Erreurs sur les champs obligatoires\", () => pm.expect(e).to.include.keys(\"name\",\"prenom\",\"filiere\",\"niveau\",\"etablissement\"));",
+                  "pm.test(\"Erreur mot de passe (< 8 caractères)\", () => pm.expect(e).to.have.property(\"password\"));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/register",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "register"
+              ]
+            },
+            "description": "",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"\",\n  \"prenom\": \"\",\n  \"email\": \"pas-un-email\",\n  \"password\": \"court\",\n  \"password_confirmation\": \"court\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "SCRUM-11 · Connexion mauvais mot de passe",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Code 401\", () => pm.response.to.have.status(401));",
+                  "pm.test(\"Message identifiants incorrects\", () => pm.expect(pm.response.json().message).to.include(\"incorrect\"));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/login",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "login"
+              ]
+            },
+            "description": "",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"{{email}}\",\n  \"password\": \"mauvais-mdp\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "SCRUM-11 · Connexion OK",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Code 200\", () => pm.response.to.have.status(200));",
+                  "const d = pm.response.json();",
+                  "pm.test(\"Token reçu\", () => pm.expect(d.token).to.be.a(\"string\").and.not.empty);",
+                  "pm.test(\"Rôle étudiant\", () => pm.expect(d.user.role).to.eql(\"etudiant\"));",
+                  "pm.test(\"Mot de passe jamais renvoyé\", () => pm.expect(d.user).to.not.have.property(\"password\"));",
+                  "pm.collectionVariables.set(\"token\", d.token);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/login",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "login"
+              ]
+            },
+            "description": "",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"{{email}}\",\n  \"password\": \"{{password}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "SCRUM-11 · Utilisateur connecté (me)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Code 200\", () => pm.response.to.have.status(200));",
+                  "pm.test(\"Bon utilisateur\", () => pm.expect(pm.response.json().email).to.eql(pm.collectionVariables.get(\"email\")));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/me",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "me"
+              ]
+            },
+            "description": ""
+          }
+        },
+        {
+          "name": "Dashboard · Nouveau compte vide",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Code 200\", () => pm.response.to.have.status(200));",
+                  "const d = pm.response.json();",
+                  "pm.test(\"Structure complète\", () => pm.expect(d).to.include.keys(\"mes_annonces\",\"activite\",\"categories\",\"recentes\",\"plateforme\",\"profil\"));",
+                  "pm.test(\"0 annonce pour un nouveau compte\", () => pm.expect(d.mes_annonces.total).to.eql(0));",
+                  "pm.test(\"8 semaines d'activité\", () => pm.expect(d.activite.length).to.eql(8));",
+                  "pm.test(\"Complétion du profil entre 0 et 100\", () => pm.expect(d.profil.completion).to.be.within(0, 100));",
+                  "pm.test(\"Statistiques de la plateforme (nombres)\", () => Object.values(d.plateforme).forEach(v => pm.expect(v).to.be.a(\"number\")));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/dashboard",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "dashboard"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Dashboard · Sans token (401)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Code 401\", () => pm.response.to.have.status(401));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/dashboard",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "dashboard"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Sécurité · Profil sans token",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Code 401\", () => pm.response.to.have.status(401));",
+                  "pm.test(\"Réponse JSON Unauthenticated\", () => pm.expect(pm.response.json().message).to.eql(\"Unauthenticated.\"));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/profile",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "profile"
+              ]
+            },
+            "description": ""
+          }
+        },
+        {
+          "name": "SCRUM-13 · Consulter son profil",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Code 200\", () => pm.response.to.have.status(200));",
+                  "const u = pm.response.json();",
+                  "pm.test(\"Champs du profil présents\", () => pm.expect(u).to.include.keys(\"prenom\",\"filiere\",\"niveau\",\"etablissement\",\"photo_url\"));",
+                  "pm.test(\"Filière enregistrée\", () => pm.expect(u.filiere).to.eql(\"Informatique\"));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/profile",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "profile"
+              ]
+            },
+            "description": ""
+          }
+        },
+        {
+          "name": "SCRUM-44 · Modifier filière, niveau et photo",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Code 200\", () => pm.response.to.have.status(200));",
+                  "const u = pm.response.json().user;",
+                  "pm.test(\"Filière modifiée\", () => pm.expect(u.filiere).to.eql(\"Génie logiciel\"));",
+                  "pm.test(\"Niveau modifié\", () => pm.expect(u.niveau).to.eql(\"M1\"));",
+                  "pm.test(\"Photo enregistrée\", () => pm.expect(u.photo_url).to.include(\"/storage/profils/\"));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/profile",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "profile"
+              ]
+            },
+            "description": "",
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "filiere",
+                  "value": "Génie logiciel",
+                  "type": "text"
+                },
+                {
+                  "key": "niveau",
+                  "value": "M1",
+                  "type": "text"
+                },
+                {
+                  "key": "photo",
+                  "type": "file",
+                  "src": "photo-test.png"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "SCRUM-44 · Changer mot de passe avec mauvais ancien",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Code 422\", () => pm.response.to.have.status(422));",
+                  "pm.test(\"Erreur sur current_password\", () => pm.expect(pm.response.json().errors).to.have.property(\"current_password\"));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/profile",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "profile"
+              ]
+            },
+            "description": "",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"current_password\": \"faux-ancien\",\n  \"password\": \"nouveau1234\",\n  \"password_confirmation\": \"nouveau1234\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "SCRUM-12 · Mot de passe oublié",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Code 200\", () => pm.response.to.have.status(200));",
+                  "pm.test(\"Message lien 30 minutes\", () => pm.expect(pm.response.json().message).to.include(\"30 minutes\"));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/forgot-password",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "forgot-password"
+              ]
+            },
+            "description": "Le vrai lien est écrit dans backend/storage/logs/laravel.log",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"{{email}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "SCRUM-12 · Réinitialisation avec lien invalide",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Code 422\", () => pm.response.to.have.status(422));",
+                  "pm.test(\"Message lien invalide ou expiré\", () => pm.expect(pm.response.json().message).to.include(\"expiré\"));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/reset-password",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "reset-password"
+              ]
+            },
+            "description": "",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"token\": \"faux-token\",\n  \"email\": \"{{email}}\",\n  \"password\": \"nouveau1234\",\n  \"password_confirmation\": \"nouveau1234\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "Admin · Liste des utilisateurs (admin)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Code 200\", () => pm.response.to.have.status(200));",
+                  "pm.test(\"Le compte de test est trouvé\", () => pm.expect(pm.response.json().total).to.eql(1));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenAdmin}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/admin/users?search={{runId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "admin",
+                "users"
+              ],
+              "query": [
+                {
+                  "key": "search",
+                  "value": "{{runId}}"
+                }
+              ]
+            },
+            "description": ""
+          }
+        },
+        {
+          "name": "Admin · Liste des utilisateurs refusée à un étudiant",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Code 403\", () => pm.response.to.have.status(403));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/admin/users",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "admin",
+                "users"
+              ]
+            },
+            "description": ""
+          }
+        }
+      ]
+    },
+    {
+      "name": "2. Sprint 2 - Annonces",
+      "item": [
+        {
+          "name": "Catégories",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Code 200\", () => pm.response.to.have.status(200));",
+                  "const c = pm.response.json();",
+                  "pm.test(\"Au moins une catégorie\", () => pm.expect(c.length).to.be.above(0));",
+                  "pm.collectionVariables.set(\"categorieId\", c[0].id);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/categories",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "categories"
+              ]
+            },
+            "description": "Si la liste est vide : php artisan db:seed --class=CategorieSeeder"
+          }
+        },
+        {
+          "name": "SCRUM-17 · Publier sans être connecté",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Code 401\", () => pm.response.to.have.status(401));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/annonces",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "annonces"
+              ]
+            },
+            "description": "",
+            "body": {
+              "mode": "raw",
+              "raw": "{}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "SCRUM-17 · Publier avec champs manquants",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Code 422\", () => pm.response.to.have.status(422));",
+                  "pm.test(\"Erreurs titre, catégorie, état, type, photos\", () => pm.expect(pm.response.json().errors).to.include.keys(\"titre\",\"categorie_id\",\"etat\",\"type\",\"photos\"));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/annonces",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "annonces"
+              ]
+            },
+            "description": "",
+            "body": {
+              "mode": "raw",
+              "raw": "{}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "SCRUM-17 · Publier une vente sans prix",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Code 422\", () => pm.response.to.have.status(422));",
+                  "pm.test(\"Erreur sur le prix\", () => pm.expect(pm.response.json().errors).to.have.property(\"prix\"));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/annonces",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "annonces"
+              ]
+            },
+            "description": "",
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "titre",
+                  "value": "Vente sans prix",
+                  "type": "text"
+                },
+                {
+                  "key": "categorie_id",
+                  "value": "{{categorieId}}",
+                  "type": "text"
+                },
+                {
+                  "key": "etat",
+                  "value": "bon",
+                  "type": "text"
+                },
+                {
+                  "key": "type",
+                  "value": "vente",
+                  "type": "text"
+                },
+                {
+                  "key": "photos[]",
+                  "type": "file",
+                  "src": "photo-test.png"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "SCRUM-17 · Publier une annonce OK",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Code 201\", () => pm.response.to.have.status(201));",
+                  "const a = pm.response.json().annonce;",
+                  "pm.test(\"Statut Disponible\", () => pm.expect(a.statut).to.eql(\"disponible\"));",
+                  "pm.test(\"1 photo enregistrée\", () => pm.expect(a.photos.length).to.eql(1));",
+                  "pm.test(\"Prix enregistré\", () => pm.expect(Number(a.prix)).to.eql(25));",
+                  "pm.collectionVariables.set(\"annonceId\", a.id);",
+                  "pm.collectionVariables.set(\"photoId\", a.photos[0].id);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/annonces",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "annonces"
+              ]
+            },
+            "description": "",
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "titre",
+                  "value": "Calculatrice TI-83 {{runId}}",
+                  "type": "text"
+                },
+                {
+                  "key": "description",
+                  "value": "Très peu servie, avec piles",
+                  "type": "text"
+                },
+                {
+                  "key": "categorie_id",
+                  "value": "{{categorieId}}",
+                  "type": "text"
+                },
+                {
+                  "key": "etat",
+                  "value": "tres_bon",
+                  "type": "text"
+                },
+                {
+                  "key": "type",
+                  "value": "vente",
+                  "type": "text"
+                },
+                {
+                  "key": "prix",
+                  "value": "25",
+                  "type": "text"
+                },
+                {
+                  "key": "photos[]",
+                  "type": "file",
+                  "src": "photo-test.png"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Dashboard · Après publication",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Code 200\", () => pm.response.to.have.status(200));",
+                  "const m = pm.response.json().mes_annonces;",
+                  "pm.test(\"1 annonce publiée, 1 en ligne\", () => { pm.expect(m.total).to.eql(1); pm.expect(m.disponibles).to.eql(1); });",
+                  "pm.test(\"1 vente, 1 cette semaine\", () => { pm.expect(m.ventes).to.eql(1); pm.expect(m.cette_semaine).to.eql(1); });",
+                  "pm.test(\"Valeur en vente = 25 DT\", () => pm.expect(m.valeur_en_vente).to.eql(25));",
+                  "const d = pm.response.json();",
+                  "pm.test(\"Annonce dans les récentes\", () => pm.expect(d.recentes[0].id).to.eql(Number(pm.collectionVariables.get(\"annonceId\"))));",
+                  "pm.test(\"Activité de la semaine = 1\", () => pm.expect(d.activite[7].total).to.eql(1));",
+                  "pm.test(\"Étape « Première annonce » cochée\", () => pm.expect(d.profil.etapes.find(e => e.cle === \"annonce\").fait).to.be.true);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/dashboard",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "dashboard"
+              ]
+            }
+          }
+        },
+        {
+          "name": "SCRUM-15 · Liste des annonces",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Code 200\", () => pm.response.to.have.status(200));",
+                  "const d = pm.response.json().data;",
+                  "pm.test(\"Seulement des annonces disponibles\", () => d.forEach(a => pm.expect(a.statut).to.eql(\"disponible\")));",
+                  "pm.test(\"Plus récentes d'abord\", () => { for (let i = 1; i < d.length; i++) pm.expect(new Date(d[i-1].created_at) >= new Date(d[i].created_at)).to.be.true; });",
+                  "pm.test(\"Ma nouvelle annonce est en tête\", () => pm.expect(d[0].id).to.eql(Number(pm.collectionVariables.get(\"annonceId\"))));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/annonces",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "annonces"
+              ]
+            },
+            "description": ""
+          }
+        },
+        {
+          "name": "SCRUM-15 · Détail d'une annonce",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Code 200\", () => pm.response.to.have.status(200));",
+                  "const a = pm.response.json();",
+                  "pm.test(\"Catégorie, photos et vendeur inclus\", () => pm.expect(a).to.include.keys(\"categorie\",\"photos\",\"user\"));",
+                  "pm.test(\"Le vendeur n'expose pas son e-mail\", () => pm.expect(a.user).to.not.have.property(\"email\"));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/annonces/{{annonceId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "annonces",
+                "{{annonceId}}"
+              ]
+            },
+            "description": ""
+          }
+        },
+        {
+          "name": "SCRUM-20 · Recherche par mot-clé",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Code 200\", () => pm.response.to.have.status(200));",
+                  "pm.test(\"1 résultat trouvé\", () => pm.expect(pm.response.json().total).to.eql(1));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/annonces?q={{runId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "annonces"
+              ],
+              "query": [
+                {
+                  "key": "q",
+                  "value": "{{runId}}"
+                }
+              ]
+            },
+            "description": ""
+          }
+        },
+        {
+          "name": "SCRUM-20 · Recherche dans la description",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Code 200\", () => pm.response.to.have.status(200));",
+                  "pm.test(\"Trouvée par la description\", () => pm.expect(pm.response.json().data.map(a => a.id)).to.include(Number(pm.collectionVariables.get(\"annonceId\"))));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/annonces?q=piles",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "annonces"
+              ],
+              "query": [
+                {
+                  "key": "q",
+                  "value": "piles"
+                }
+              ]
+            },
+            "description": ""
+          }
+        },
+        {
+          "name": "SCRUM-20 · Recherche sans résultat",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Code 200\", () => pm.response.to.have.status(200));",
+                  "pm.test(\"0 résultat\", () => pm.expect(pm.response.json().total).to.eql(0));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/annonces?q=zzzintrouvablezzz",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "annonces"
+              ],
+              "query": [
+                {
+                  "key": "q",
+                  "value": "zzzintrouvablezzz"
+                }
+              ]
+            },
+            "description": ""
+          }
+        },
+        {
+          "name": "SCRUM-21 · Filtres type + prix max",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Code 200\", () => pm.response.to.have.status(200));",
+                  "const d = pm.response.json().data;",
+                  "pm.test(\"Que des ventes à 50 DT max\", () => d.forEach(a => { pm.expect(a.type).to.eql(\"vente\"); pm.expect(Number(a.prix)).to.be.at.most(50); }));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/annonces?type=vente&prix_max=50",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "annonces"
+              ],
+              "query": [
+                {
+                  "key": "type",
+                  "value": "vente"
+                },
+                {
+                  "key": "prix_max",
+                  "value": "50"
+                }
+              ]
+            },
+            "description": ""
+          }
+        },
+        {
+          "name": "SCRUM-21 · Filtre catégorie + état",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Code 200\", () => pm.response.to.have.status(200));",
+                  "const d = pm.response.json().data;",
+                  "pm.test(\"Bonne catégorie et bon état\", () => d.forEach(a => { pm.expect(a.categorie_id).to.eql(Number(pm.collectionVariables.get(\"categorieId\"))); pm.expect(a.etat).to.eql(\"tres_bon\"); }));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/annonces?categorie={{categorieId}}&etat=tres_bon",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "annonces"
+              ],
+              "query": [
+                {
+                  "key": "categorie",
+                  "value": "{{categorieId}}"
+                },
+                {
+                  "key": "etat",
+                  "value": "tres_bon"
+                }
+              ]
+            },
+            "description": ""
+          }
+        },
+        {
+          "name": "SCRUM-21 · Tri par prix croissant",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Code 200\", () => pm.response.to.have.status(200));",
+                  "const p = pm.response.json().data.map(a => Number(a.prix || 0));",
+                  "pm.test(\"Prix croissants (un don vaut 0)\", () => { for (let i = 1; i < p.length; i++) pm.expect(p[i]).to.be.at.least(p[i-1]); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/annonces?tri=prix_asc",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "annonces"
+              ],
+              "query": [
+                {
+                  "key": "tri",
+                  "value": "prix_asc"
+                }
+              ]
+            },
+            "description": ""
+          }
+        },
+        {
+          "name": "SCRUM-21 · Paramètre invalide refusé",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Code 422\", () => pm.response.to.have.status(422));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/annonces?type=location",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "annonces"
+              ],
+              "query": [
+                {
+                  "key": "type",
+                  "value": "location"
+                }
+              ]
+            },
+            "description": ""
+          }
+        },
+        {
+          "name": "SCRUM-18 · Mes annonces",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Code 200\", () => pm.response.to.have.status(200));",
+                  "pm.test(\"Contient mon annonce\", () => pm.expect(pm.response.json().map(a => a.id)).to.include(Number(pm.collectionVariables.get(\"annonceId\"))));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/mes-annonces",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "mes-annonces"
+              ]
+            },
+            "description": ""
+          }
+        },
+        {
+          "name": "SCRUM-18 · Modifier son annonce",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Code 200\", () => pm.response.to.have.status(200));",
+                  "const a = pm.response.json().annonce;",
+                  "pm.test(\"Titre modifié\", () => pm.expect(a.titre).to.include(\"modifiée\"));",
+                  "pm.test(\"Prix modifié\", () => pm.expect(Number(a.prix)).to.eql(20));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/annonces/{{annonceId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "annonces",
+                "{{annonceId}}"
+              ]
+            },
+            "description": "",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"titre\": \"Calculatrice TI-83 modifiée {{runId}}\",\n  \"prix\": 20\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "SCRUM-18 · Modifier l'annonce d'un autre (403)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Code 403\", () => pm.response.to.have.status(403));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenVendeur}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/annonces/{{annonceId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "annonces",
+                "{{annonceId}}"
+              ]
+            },
+            "description": "L'admin n'est pas le propriétaire : refus attendu.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"titre\": \"Piraté\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "SCRUM-18 · Retirer toutes les photos (refusé)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Code 422\", () => pm.response.to.have.status(422));",
+                  "pm.test(\"Erreur sur les photos\", () => pm.expect(pm.response.json().errors).to.have.property(\"photos\"));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/annonces/{{annonceId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "annonces",
+                "{{annonceId}}"
+              ]
+            },
+            "description": "",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"photos_supprimees\": [\n    \"{{photoId}}\"\n  ]\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "SCRUM-18 · Passer l'annonce en Réservée",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Code 200\", () => pm.response.to.have.status(200));",
+                  "pm.test(\"Statut réservée\", () => pm.expect(pm.response.json().annonce.statut).to.eql(\"reservee\"));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/annonces/{{annonceId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "annonces",
+                "{{annonceId}}"
+              ]
+            },
+            "description": "",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"statut\": \"reservee\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "SCRUM-15 · Une annonce réservée n'est plus listée",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Code 200\", () => pm.response.to.have.status(200));",
+                  "pm.test(\"0 résultat\", () => pm.expect(pm.response.json().total).to.eql(0));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/annonces?q={{runId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "annonces"
+              ],
+              "query": [
+                {
+                  "key": "q",
+                  "value": "{{runId}}"
+                }
+              ]
+            },
+            "description": ""
+          }
+        },
+        {
+          "name": "Dashboard · Après réservation",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Code 200\", () => pm.response.to.have.status(200));",
+                  "const m = pm.response.json().mes_annonces;",
+                  "pm.test(\"0 en ligne, 1 réservée\", () => { pm.expect(m.disponibles).to.eql(0); pm.expect(m.reservees).to.eql(1); });",
+                  "pm.test(\"Valeur en vente revenue à 0\", () => pm.expect(m.valeur_en_vente).to.eql(0));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/dashboard",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "dashboard"
+              ]
+            }
+          }
+        },
+        {
+          "name": "SCRUM-46 · Supprimer l'annonce d'un autre (403)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Code 403\", () => pm.response.to.have.status(403));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenVendeur}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/annonces/{{annonceId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "annonces",
+                "{{annonceId}}"
+              ]
+            },
+            "description": ""
+          }
+        },
+        {
+          "name": "SCRUM-46 · Supprimer son annonce",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Code 200\", () => pm.response.to.have.status(200));",
+                  "pm.test(\"Message de suppression\", () => pm.expect(pm.response.json().message).to.include(\"supprimée\"));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/annonces/{{annonceId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "annonces",
+                "{{annonceId}}"
+              ]
+            },
+            "description": ""
+          }
+        },
+        {
+          "name": "SCRUM-46 · L'annonce supprimée n'existe plus",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Code 404\", () => pm.response.to.have.status(404));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/annonces/{{annonceId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "annonces",
+                "{{annonceId}}"
+              ]
+            },
+            "description": ""
+          }
+        }
+      ]
+    },
+    {
+      "name": "3. Sprint 3 - Demandes et matching",
+      "item": [
+        {
+          "name": "SCRUM-22 · Publier une demande sans token",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Code 401\", () => pm.response.to.have.status(401));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/demandes",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "demandes"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "SCRUM-22 · Demande avec champs manquants",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Code 422\", () => pm.response.to.have.status(422));",
+                  "pm.test(\"Erreurs titre, catégorie, budget, état\", () => pm.expect(pm.response.json().errors).to.include.keys(\"titre\",\"categorie_id\",\"budget_max\",\"etat_min\"));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/demandes",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "demandes"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "Préparation · Le vendeur publie une annonce correspondante",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Code 201\", () => pm.response.to.have.status(201));",
+                  "pm.collectionVariables.set(\"annonce2Id\", pm.response.json().annonce.id);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenVendeur}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/annonces",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "annonces"
+              ]
+            },
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "titre",
+                  "value": "Calculatrice graphique {{runId}}",
+                  "type": "text"
+                },
+                {
+                  "key": "description",
+                  "value": "TI-83, comme neuve",
+                  "type": "text"
+                },
+                {
+                  "key": "categorie_id",
+                  "value": "{{categorieId}}",
+                  "type": "text"
+                },
+                {
+                  "key": "etat",
+                  "value": "neuf",
+                  "type": "text"
+                },
+                {
+                  "key": "type",
+                  "value": "vente",
+                  "type": "text"
+                },
+                {
+                  "key": "prix",
+                  "value": "20",
+                  "type": "text"
+                },
+                {
+                  "key": "photos[]",
+                  "type": "file",
+                  "src": "photo-test.png"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "SCRUM-22 / 24 · Publier une demande (matching)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Code 201\", () => pm.response.to.have.status(201));",
+                  "const d = pm.response.json();",
+                  "pm.test(\"Statut Ouverte\", () => pm.expect(d.demande.statut).to.eql(\"ouverte\"));",
+                  "pm.test(\"Au moins 1 proposition trouvée\", () => pm.expect(d.propositions).to.be.at.least(1));",
+                  "pm.collectionVariables.set(\"demandeId\", d.demande.id);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/demandes",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "demandes"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"titre\": \"Calculatrice graphique {{runId}}\",\n  \"description\": \"Pour le cours de maths\",\n  \"categorie_id\": \"{{categorieId}}\",\n  \"budget_max\": 50,\n  \"etat_min\": \"bon\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "SCRUM-23 · Mes demandes",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Code 200\", () => pm.response.to.have.status(200));",
+                  "const d = pm.response.json().find(x => x.id === Number(pm.collectionVariables.get(\"demandeId\")));",
+                  "pm.test(\"Ma demande est listée\", () => pm.expect(d).to.exist);",
+                  "pm.test(\"Avec son nombre de propositions\", () => pm.expect(d.propositions_count).to.be.at.least(1));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/mes-demandes",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "mes-demandes"
+              ]
+            }
+          }
+        },
+        {
+          "name": "SCRUM-25 · Mes propositions",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Code 200\", () => pm.response.to.have.status(200));",
+                  "const p = pm.response.json();",
+                  "pm.test(\"L'annonce correspondante est proposée\", () => pm.expect(p.map(x => x.annonce_id)).to.include(Number(pm.collectionVariables.get(\"annonce2Id\"))));",
+                  "pm.test(\"Scores entre 50 et 100\", () => p.forEach(x => pm.expect(x.score).to.be.within(50, 100)));",
+                  "pm.test(\"Triées par score décroissant\", () => { for (let i = 1; i < p.length; i++) pm.expect(p[i-1].score).to.be.at.least(p[i].score); });",
+                  "pm.test(\"Détail du score par critère\", () => pm.expect(p[0].details).to.include.keys(\"mots_cles\",\"prix\",\"etat\",\"etablissement\",\"mots_trouves\"));",
+                  "pm.test(\"Somme des critères = score\", () => { const s = p[0].details; pm.expect(s.mots_cles + s.prix + s.etat + s.etablissement).to.eql(p[0].score); });",
+                  "pm.test(\"Annonce et vendeur inclus\", () => pm.expect(p[0].annonce).to.include.keys(\"photos\",\"categorie\",\"user\"));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/propositions?demande={{demandeId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "propositions"
+              ],
+              "query": [
+                {
+                  "key": "demande",
+                  "value": "{{demandeId}}"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "SCRUM-23 · Voir la demande d'un autre (403)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Code 403\", () => pm.response.to.have.status(403));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenVendeur}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/demandes/{{demandeId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "demandes",
+                "{{demandeId}}"
+              ]
+            }
+          }
+        },
+        {
+          "name": "SCRUM-23 · Modifier la demande d'un autre (403)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Code 403\", () => pm.response.to.have.status(403));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenVendeur}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/demandes/{{demandeId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "demandes",
+                "{{demandeId}}"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"titre\": \"Piraté\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "SCRUM-47 · Supprimer la demande d'un autre (403)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Code 403\", () => pm.response.to.have.status(403));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenVendeur}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/demandes/{{demandeId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "demandes",
+                "{{demandeId}}"
+              ]
+            }
+          }
+        },
+        {
+          "name": "SCRUM-24 · Budget trop bas : plus de correspondance",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Code 200\", () => pm.response.to.have.status(200));",
+                  "pm.test(\"0 proposition (prix 20 DT > budget 10 DT)\", () => pm.expect(pm.response.json().propositions).to.eql(0));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/demandes/{{demandeId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "demandes",
+                "{{demandeId}}"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"budget_max\": 10\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "SCRUM-23 · Modifier sa demande (budget 50)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Code 200\", () => pm.response.to.have.status(200));",
+                  "const d = pm.response.json();",
+                  "pm.test(\"Budget enregistré\", () => pm.expect(Number(d.demande.budget_max)).to.eql(50));",
+                  "pm.test(\"Correspondance retrouvée\", () => pm.expect(d.propositions).to.be.at.least(1));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/demandes/{{demandeId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "demandes",
+                "{{demandeId}}"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"budget_max\": 50\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "SCRUM-24 · Annonce réservée : retirée des propositions",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Code 200\", () => pm.response.to.have.status(200));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenVendeur}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/annonces/{{annonce2Id}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "annonces",
+                "{{annonce2Id}}"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"statut\": \"reservee\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "SCRUM-25 · Propositions après réservation",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Code 200\", () => pm.response.to.have.status(200));",
+                  "pm.test(\"L'annonce réservée n'est plus proposée\", () => pm.expect(pm.response.json().map(x => x.annonce_id)).to.not.include(Number(pm.collectionVariables.get(\"annonce2Id\"))));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/propositions?demande={{demandeId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "propositions"
+              ],
+              "query": [
+                {
+                  "key": "demande",
+                  "value": "{{demandeId}}"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "SCRUM-23 · Clôturer sa demande",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Code 200\", () => pm.response.to.have.status(200));",
+                  "pm.test(\"Statut clôturée\", () => pm.expect(pm.response.json().demande.statut).to.eql(\"cloturee\"));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/demandes/{{demandeId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "demandes",
+                "{{demandeId}}"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"statut\": \"cloturee\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "SCRUM-47 · Supprimer sa demande",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Code 200\", () => pm.response.to.have.status(200));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/demandes/{{demandeId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "demandes",
+                "{{demandeId}}"
+              ]
+            }
+          }
+        },
+        {
+          "name": "SCRUM-47 · La demande supprimée n'existe plus",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Code 404\", () => pm.response.to.have.status(404));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/demandes/{{demandeId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "demandes",
+                "{{demandeId}}"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Nettoyage · Le vendeur supprime son annonce de test",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Code 200\", () => pm.response.to.have.status(200));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenVendeur}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/annonces/{{annonce2Id}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "annonces",
+                "{{annonce2Id}}"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "4. Sprint 4 - Messagerie et échanges",
+      "item": [
+        {
+          "name": "Préparation · Le vendeur publie « Lampe de bureau »",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Code 201\", () => pm.response.to.have.status(201));",
+                  "pm.collectionVariables.set(\"annonce3Id\", pm.response.json().annonce.id);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenVendeur}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/annonces",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "annonces"
+              ]
+            },
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "titre",
+                  "value": "Lampe de bureau {{runId}}",
+                  "type": "text"
+                },
+                {
+                  "key": "categorie_id",
+                  "value": "{{categorieId}}",
+                  "type": "text"
+                },
+                {
+                  "key": "etat",
+                  "value": "bon",
+                  "type": "text"
+                },
+                {
+                  "key": "type",
+                  "value": "vente",
+                  "type": "text"
+                },
+                {
+                  "key": "prix",
+                  "value": "15",
+                  "type": "text"
+                },
+                {
+                  "key": "photos[]",
+                  "type": "file",
+                  "src": "photo-test.png"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "SCRUM-28 · Message vide refusé",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Code 422\", () => pm.response.to.have.status(422));",
+                  "pm.test(\"Erreur sur le contenu\", () => pm.expect(pm.response.json().errors).to.have.property(\"contenu\"));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/conversations",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "conversations"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"annonce_id\": \"{{annonce3Id}}\",\n  \"contenu\": \"   \"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "SCRUM-28 · Écrire sur sa propre annonce (refusé)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Code 422\", () => pm.response.to.have.status(422));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenVendeur}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/conversations",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "conversations"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"annonce_id\": \"{{annonce3Id}}\",\n  \"contenu\": \"Test\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "SCRUM-28 · Envoyer un message au propriétaire",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Code 201\", () => pm.response.to.have.status(201));",
+                  "const c = pm.response.json().conversation;",
+                  "pm.test(\"Conversation liée à l'annonce\", () => pm.expect(c.annonce_id).to.eql(Number(pm.collectionVariables.get(\"annonce3Id\"))));",
+                  "pm.collectionVariables.set(\"conversationId\", c.id);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/conversations",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "conversations"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"annonce_id\": \"{{annonce3Id}}\",\n  \"contenu\": \"Bonjour, la lampe est toujours disponible ?\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "SCRUM-28 · Le propriétaire a un message non lu",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Code 200\", () => pm.response.to.have.status(200));",
+                  "pm.test(\"Au moins 1 non lu\", () => pm.expect(pm.response.json().non_lus).to.be.at.least(1));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenVendeur}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/messages/non-lus",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "messages",
+                "non-lus"
+              ]
+            }
+          }
+        },
+        {
+          "name": "SCRUM-28 · Le propriétaire lit la conversation",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Code 200\", () => pm.response.to.have.status(200));",
+                  "const c = pm.response.json();",
+                  "pm.test(\"1 message\", () => pm.expect(c.messages.length).to.eql(1));",
+                  "pm.test(\"Annonce incluse\", () => pm.expect(c.annonce.titre).to.include(\"Lampe\"));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenVendeur}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/conversations/{{conversationId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "conversations",
+                "{{conversationId}}"
+              ]
+            }
+          }
+        },
+        {
+          "name": "SCRUM-28 · Le propriétaire répond",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Code 201\", () => pm.response.to.have.status(201));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenVendeur}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/conversations/{{conversationId}}/messages",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "conversations",
+                "{{conversationId}}",
+                "messages"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"contenu\": \"Oui ! Passe demain à 10h.\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "SCRUM-28 · L'étudiant voit la réponse non lue",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Code 200\", () => pm.response.to.have.status(200));",
+                  "const c = pm.response.json().find(x => x.id === Number(pm.collectionVariables.get(\"conversationId\")));",
+                  "pm.test(\"Conversation listée\", () => pm.expect(c).to.exist);",
+                  "pm.test(\"1 message non lu\", () => pm.expect(c.non_lus).to.eql(1));",
+                  "pm.test(\"Dernier message = la réponse\", () => pm.expect(c.dernier_message.contenu).to.include(\"10h\"));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/conversations",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "conversations"
+              ]
+            }
+          }
+        },
+        {
+          "name": "SCRUM-30 · Réserver sa propre annonce (refusé)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Code 422\", () => pm.response.to.have.status(422));",
+                  "pm.test(\"Message clair\", () => pm.expect(pm.response.json().errors.annonce[0]).to.include(\"propre annonce\"));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenVendeur}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/annonces/{{annonce3Id}}/reserver",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "annonces",
+                "{{annonce3Id}}",
+                "reserver"
+              ]
+            }
+          }
+        },
+        {
+          "name": "SCRUM-30 · Réserver l'objet",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Code 201\", () => pm.response.to.have.status(201));",
+                  "const r = pm.response.json().reservation;",
+                  "pm.test(\"Statut En attente\", () => pm.expect(r.statut).to.eql(\"en_attente\"));",
+                  "pm.collectionVariables.set(\"reservationId\", r.id);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/annonces/{{annonce3Id}}/reserver",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "annonces",
+                "{{annonce3Id}}",
+                "reserver"
+              ]
+            }
+          }
+        },
+        {
+          "name": "SCRUM-30 · Double réservation refusée",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Code 422\", () => pm.response.to.have.status(422));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/annonces/{{annonce3Id}}/reserver",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "annonces",
+                "{{annonce3Id}}",
+                "reserver"
+              ]
+            }
+          }
+        },
+        {
+          "name": "SCRUM-31 · L'étudiant ne peut pas accepter (403)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Code 403\", () => pm.response.to.have.status(403));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/reservations/{{reservationId}}/accepter",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "reservations",
+                "{{reservationId}}",
+                "accepter"
+              ]
+            }
+          }
+        },
+        {
+          "name": "SCRUM-31 · Réservations reçues du propriétaire",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Code 200\", () => pm.response.to.have.status(200));",
+                  "pm.test(\"Contient la réservation\", () => pm.expect(pm.response.json().map(r => r.id)).to.include(Number(pm.collectionVariables.get(\"reservationId\"))));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenVendeur}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/reservations/recues",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "reservations",
+                "recues"
+              ]
+            }
+          }
+        },
+        {
+          "name": "SCRUM-31 · Accepter la réservation",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Code 200\", () => pm.response.to.have.status(200));",
+                  "const r = pm.response.json().reservation;",
+                  "pm.test(\"Statut acceptée\", () => pm.expect(r.statut).to.eql(\"acceptee\"));",
+                  "pm.test(\"Annonce « Réservée »\", () => pm.expect(r.annonce.statut).to.eql(\"reservee\"));",
+                  "pm.test(\"Date limite à 7 jours\", () => { const j = (new Date(r.expire_le) - new Date(r.acceptee_at)) / 86400000; pm.expect(Math.round(j)).to.eql(7); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenVendeur}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/reservations/{{reservationId}}/accepter",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "reservations",
+                "{{reservationId}}",
+                "accepter"
+              ]
+            }
+          }
+        },
+        {
+          "name": "SCRUM-32 · L'étudiant confirme la remise",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Code 200\", () => pm.response.to.have.status(200));",
+                  "pm.test(\"Encore en attente de l'autre\", () => pm.expect(pm.response.json().reservation.statut).to.eql(\"acceptee\"));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/reservations/{{reservationId}}/confirmer",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "reservations",
+                "{{reservationId}}",
+                "confirmer"
+              ]
+            }
+          }
+        },
+        {
+          "name": "SCRUM-32 · Confirmer deux fois (refusé)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Code 422\", () => pm.response.to.have.status(422));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/reservations/{{reservationId}}/confirmer",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "reservations",
+                "{{reservationId}}",
+                "confirmer"
+              ]
+            }
+          }
+        },
+        {
+          "name": "SCRUM-32 · Le propriétaire confirme : échange terminé",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Code 200\", () => pm.response.to.have.status(200));",
+                  "const r = pm.response.json().reservation;",
+                  "pm.test(\"Statut terminée\", () => pm.expect(r.statut).to.eql(\"terminee\"));",
+                  "pm.test(\"Annonce « Cédée »\", () => pm.expect(r.annonce.statut).to.eql(\"cedee\"));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenVendeur}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/reservations/{{reservationId}}/confirmer",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "reservations",
+                "{{reservationId}}",
+                "confirmer"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Préparation · Le vendeur publie « Sac à dos »",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Code 201\", () => pm.response.to.have.status(201));",
+                  "pm.collectionVariables.set(\"annonce4Id\", pm.response.json().annonce.id);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenVendeur}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/annonces",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "annonces"
+              ]
+            },
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "titre",
+                  "value": "Sac à dos {{runId}}",
+                  "type": "text"
+                },
+                {
+                  "key": "categorie_id",
+                  "value": "{{categorieId}}",
+                  "type": "text"
+                },
+                {
+                  "key": "etat",
+                  "value": "bon",
+                  "type": "text"
+                },
+                {
+                  "key": "type",
+                  "value": "vente",
+                  "type": "text"
+                },
+                {
+                  "key": "prix",
+                  "value": "15",
+                  "type": "text"
+                },
+                {
+                  "key": "photos[]",
+                  "type": "file",
+                  "src": "photo-test.png"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "SCRUM-48 · Réserver un 2e objet",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Code 201\", () => pm.response.to.have.status(201));",
+                  "pm.collectionVariables.set(\"reservation2Id\", pm.response.json().reservation.id);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/annonces/{{annonce4Id}}/reserver",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "annonces",
+                "{{annonce4Id}}",
+                "reserver"
+              ]
+            }
+          }
+        },
+        {
+          "name": "SCRUM-48 · Refuser la réservation",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Code 200\", () => pm.response.to.have.status(200));",
+                  "const r = pm.response.json().reservation;",
+                  "pm.test(\"Statut refusée\", () => pm.expect(r.statut).to.eql(\"refusee\"));",
+                  "pm.test(\"Annonce reste « Disponible »\", () => pm.expect(r.annonce.statut).to.eql(\"disponible\"));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenVendeur}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/reservations/{{reservation2Id}}/refuser",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "reservations",
+                "{{reservation2Id}}",
+                "refuser"
+              ]
+            }
+          }
+        },
+        {
+          "name": "SCRUM-48 · Mes réservations (étudiant)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Code 200\", () => pm.response.to.have.status(200));",
+                  "const l = pm.response.json();",
+                  "pm.test(\"Une terminée et une refusée\", () => {",
+                  "  pm.expect(l.find(r => r.id === Number(pm.collectionVariables.get(\"reservationId\"))).statut).to.eql(\"terminee\");",
+                  "  pm.expect(l.find(r => r.id === Number(pm.collectionVariables.get(\"reservation2Id\"))).statut).to.eql(\"refusee\");",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/reservations/envoyees",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "reservations",
+                "envoyees"
+              ]
+            }
+          }
+        },
+        {
+          "name": "SCRUM-34 · Désactiver les e-mails",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Code 200\", () => pm.response.to.have.status(200));",
+                  "pm.test(\"Option désactivée\", () => pm.expect(pm.response.json().user.notifications_email).to.eql(false));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/profile",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "profile"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"notifications_email\": false\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "SCRUM-34 · Réactiver les e-mails",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Code 200\", () => pm.response.to.have.status(200));",
+                  "pm.test(\"Option activée\", () => pm.expect(pm.response.json().user.notifications_email).to.eql(true));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/profile",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "profile"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"notifications_email\": true\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "Dashboard · Échanges",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Code 200\", () => pm.response.to.have.status(200));",
+                  "pm.test(\"1 échange terminé\", () => pm.expect(pm.response.json().echanges.echanges_termines).to.be.at.least(1));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/dashboard",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "dashboard"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Nettoyage · Supprimer l'annonce « Lampe »",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Code 200\", () => pm.response.to.have.status(200));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenVendeur}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/annonces/{{annonce3Id}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "annonces",
+                "{{annonce3Id}}"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Nettoyage · Supprimer l'annonce « Sac à dos »",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Code 200\", () => pm.response.to.have.status(200));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenVendeur}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/annonces/{{annonce4Id}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "annonces",
+                "{{annonce4Id}}"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "5. Favoris",
+      "item": [
+        {
+          "name": "Préparation · Le vendeur publie « Vélo pliant »",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Code 201\", () => pm.response.to.have.status(201));",
+                  "pm.collectionVariables.set(\"annonce5Id\", pm.response.json().annonce.id);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenVendeur}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/annonces",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "annonces"
+              ]
+            },
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "titre",
+                  "value": "Vélo pliant {{runId}}",
+                  "type": "text"
+                },
+                {
+                  "key": "categorie_id",
+                  "value": "{{categorieId}}",
+                  "type": "text"
+                },
+                {
+                  "key": "etat",
+                  "value": "bon",
+                  "type": "text"
+                },
+                {
+                  "key": "type",
+                  "value": "vente",
+                  "type": "text"
+                },
+                {
+                  "key": "prix",
+                  "value": "90",
+                  "type": "text"
+                },
+                {
+                  "key": "photos[]",
+                  "type": "file",
+                  "src": "photo-test.png"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Favoris · Sans token (401)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Code 401\", () => pm.response.to.have.status(401));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/favoris",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "favoris"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Favoris · Mettre sa propre annonce en favori (refusé)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Code 422\", () => pm.response.to.have.status(422));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenVendeur}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/annonces/{{annonce5Id}}/favori",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "annonces",
+                "{{annonce5Id}}",
+                "favori"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Favoris · Ajouter une annonce",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Code 201\", () => pm.response.to.have.status(201));",
+                  "pm.test(\"favori = true\", () => pm.expect(pm.response.json().favori).to.eql(true));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/annonces/{{annonce5Id}}/favori",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "annonces",
+                "{{annonce5Id}}",
+                "favori"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Favoris · Ajouter deux fois (pas de doublon)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Code 201\", () => pm.response.to.have.status(201));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/annonces/{{annonce5Id}}/favori",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "annonces",
+                "{{annonce5Id}}",
+                "favori"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Favoris · Mes favoris",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Code 200\", () => pm.response.to.have.status(200));",
+                  "const l = pm.response.json();",
+                  "const a = l.filter(x => x.id === Number(pm.collectionVariables.get(\"annonce5Id\")));",
+                  "pm.test(\"L'annonce est présente une seule fois\", () => pm.expect(a.length).to.eql(1));",
+                  "pm.test(\"Avec photos, catégorie et vendeur\", () => pm.expect(a[0]).to.include.keys(\"photos\",\"categorie\",\"user\"));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/favoris",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "favoris"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Favoris · Identifiants (cœurs)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Code 200\", () => pm.response.to.have.status(200));",
+                  "pm.test(\"Contient l'annonce\", () => pm.expect(pm.response.json()).to.include(Number(pm.collectionVariables.get(\"annonce5Id\"))));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/favoris/ids",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "favoris",
+                "ids"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Favoris · Compteur du tableau de bord",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Code 200\", () => pm.response.to.have.status(200));",
+                  "pm.test(\"Au moins 1 favori\", () => pm.expect(pm.response.json().stats.favoris).to.be.at.least(1));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/dashboard",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "dashboard"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Favoris · Retirer l'annonce",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Code 200\", () => pm.response.to.have.status(200));",
+                  "pm.test(\"favori = false\", () => pm.expect(pm.response.json().favori).to.eql(false));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/annonces/{{annonce5Id}}/favori",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "annonces",
+                "{{annonce5Id}}",
+                "favori"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Favoris · L'annonce n'est plus dans mes favoris",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Code 200\", () => pm.response.to.have.status(200));",
+                  "pm.test(\"Absente\", () => pm.expect(pm.response.json()).to.not.include(Number(pm.collectionVariables.get(\"annonce5Id\"))));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/favoris/ids",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "favoris",
+                "ids"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Nettoyage · Supprimer l'annonce « Vélo pliant »",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Code 200\", () => pm.response.to.have.status(200));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenVendeur}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/annonces/{{annonce5Id}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "annonces",
+                "{{annonce5Id}}"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "6. Administration",
+      "item": [
+        {
+          "name": "L'admin ne peut pas déposer d'annonce (403)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Code 403\", () => pm.response.to.have.status(403));",
+                  "pm.test(\"Message clair\", () => pm.expect(pm.response.json().message).to.include(\"étudiants\"));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/annonces",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"titre\": \"Annonce admin\",\n  \"description\": \"Ne doit pas être créée\",\n  \"type\": \"don\",\n  \"etat\": \"bon\",\n  \"categorie_id\": {{categorieId}}\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{tokenAdmin}}",
+                  "type": "string"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Admin · Un étudiant n'a pas accès (403)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Code 403\", () => pm.response.to.have.status(403));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/admin/stats",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "admin",
+                "stats"
+              ]
+            }
+          }
+        },
+        {
+          "name": "SCRUM-38 · Rechercher l'étudiant de test",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Code 200\", () => pm.response.to.have.status(200));",
+                  "const d = pm.response.json();",
+                  "pm.test(\"1 résultat\", () => pm.expect(d.total).to.eql(1));",
+                  "pm.test(\"Compteurs d'annonces et de demandes\", () => pm.expect(d.data[0]).to.include.keys(\"annonces_count\",\"demandes_count\"));",
+                  "pm.collectionVariables.set(\"testUserId\", d.data[0].id);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenAdmin}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/admin/users?search={{runId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "admin",
+                "users"
+              ],
+              "query": [
+                {
+                  "key": "search",
+                  "value": "{{runId}}"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "SCRUM-38 · Fiche détaillée",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Code 200\", () => pm.response.to.have.status(200));",
+                  "const u = pm.response.json();",
+                  "pm.test(\"Bon compte\", () => pm.expect(u.email).to.eql(pm.collectionVariables.get(\"email\")));",
+                  "pm.test(\"Statistiques de l'étudiant\", () => pm.expect(u).to.include.keys(\"reservations_count\",\"echanges_termines\",\"favoris_count\"));",
+                  "pm.test(\"Pas de mot de passe\", () => pm.expect(u).to.not.have.property(\"password\"));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenAdmin}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/admin/users/{{testUserId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "admin",
+                "users",
+                "{{testUserId}}"
+              ]
+            }
+          }
+        },
+        {
+          "name": "SCRUM-49 · Bloquer l'étudiant",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Code 200\", () => pm.response.to.have.status(200));",
+                  "pm.test(\"bloque = true\", () => pm.expect(pm.response.json().user.bloque).to.eql(true));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenAdmin}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/admin/users/{{testUserId}}/bloquer",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "admin",
+                "users",
+                "{{testUserId}}",
+                "bloquer"
+              ]
+            }
+          }
+        },
+        {
+          "name": "SCRUM-49 · Son token ne marche plus (401)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Code 401\", () => pm.response.to.have.status(401));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/me",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "me"
+              ]
+            }
+          }
+        },
+        {
+          "name": "SCRUM-49 · Il ne peut plus se connecter (403)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Code 403\", () => pm.response.to.have.status(403));",
+                  "pm.test(\"Message compte bloqué\", () => pm.expect(pm.response.json().message).to.include(\"bloqué\"));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/login",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "login"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"{{email}}\",\n  \"password\": \"{{password}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "SCRUM-49 · Filtre « bloqués »",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Code 200\", () => pm.response.to.have.status(200));",
+                  "pm.test(\"Le compte est listé\", () => pm.expect(pm.response.json().data.map(u => u.id)).to.include(Number(pm.collectionVariables.get(\"testUserId\"))));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenAdmin}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/admin/users?bloque=1",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "admin",
+                "users"
+              ],
+              "query": [
+                {
+                  "key": "bloque",
+                  "value": "1"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "SCRUM-49 · Bloquer un administrateur (refusé)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Code 422\", () => pm.response.to.have.status(422));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenAdmin}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/admin/users/{{adminId}}/bloquer",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "admin",
+                "users",
+                "{{adminId}}",
+                "bloquer"
+              ]
+            }
+          }
+        },
+        {
+          "name": "SCRUM-50 · Débloquer l'étudiant",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Code 200\", () => pm.response.to.have.status(200));",
+                  "pm.test(\"bloque = false\", () => pm.expect(pm.response.json().user.bloque).to.eql(false));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenAdmin}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/admin/users/{{testUserId}}/debloquer",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "admin",
+                "users",
+                "{{testUserId}}",
+                "debloquer"
+              ]
+            }
+          }
+        },
+        {
+          "name": "SCRUM-50 · Il peut se reconnecter",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Code 200\", () => pm.response.to.have.status(200));",
+                  "pm.collectionVariables.set(\"token\", pm.response.json().token);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/login",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "login"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"{{email}}\",\n  \"password\": \"{{password}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "SCRUM-51 · Supprimer son propre compte admin (refusé)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Code 422\", () => pm.response.to.have.status(422));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenAdmin}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/admin/users/{{adminId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "admin",
+                "users",
+                "{{adminId}}"
+              ]
+            }
+          }
+        },
+        {
+          "name": "SCRUM-39 · Liste des catégories",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Code 200\", () => pm.response.to.have.status(200));",
+                  "pm.test(\"Avec compteurs\", () => pm.expect(pm.response.json()[0]).to.include.keys(\"annonces_count\",\"demandes_count\"));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenAdmin}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/admin/categories",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "admin",
+                "categories"
+              ]
+            }
+          }
+        },
+        {
+          "name": "SCRUM-39 · Ajouter une catégorie",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Code 201\", () => pm.response.to.have.status(201));",
+                  "pm.collectionVariables.set(\"catTestId\", pm.response.json().categorie.id);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenAdmin}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/admin/categories",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "admin",
+                "categories"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nom\": \"Catégorie Postman {{runId}}\",\n  \"icone\": \"🧪\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "SCRUM-39 · Doublon refusé",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Code 422\", () => pm.response.to.have.status(422));",
+                  "pm.test(\"Erreur sur le nom\", () => pm.expect(pm.response.json().errors).to.have.property(\"nom\"));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenAdmin}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/admin/categories",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "admin",
+                "categories"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nom\": \"  catégorie postman {{runId}} \"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "SCRUM-39 · Nom vide refusé",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Code 422\", () => pm.response.to.have.status(422));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenAdmin}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/admin/categories",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "admin",
+                "categories"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nom\": \"\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "SCRUM-52 · Modifier la catégorie",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Code 200\", () => pm.response.to.have.status(200));",
+                  "pm.test(\"Nom modifié\", () => pm.expect(pm.response.json().categorie.nom).to.include(\"modifiée\"));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenAdmin}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/admin/categories/{{catTestId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "admin",
+                "categories",
+                "{{catTestId}}"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nom\": \"Catégorie Postman modifiée {{runId}}\",\n  \"icone\": \"🧫\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "SCRUM-53 · Supprimer une catégorie qui contient des annonces (refusé)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Code 422\", () => pm.response.to.have.status(422));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenAdmin}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/admin/categories/{{categorieId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "admin",
+                "categories",
+                "{{categorieId}}"
+              ]
+            }
+          }
+        },
+        {
+          "name": "SCRUM-53 · Supprimer la catégorie vide",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Code 200\", () => pm.response.to.have.status(200));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenAdmin}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/admin/categories/{{catTestId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "admin",
+                "categories",
+                "{{catTestId}}"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Admin · Statistiques de la plateforme",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Code 200\", () => pm.response.to.have.status(200));",
+                  "const s = pm.response.json();",
+                  "pm.test(\"Toutes les sections\", () => pm.expect(s).to.include.keys(\"utilisateurs\",\"annonces\",\"activite\",\"categories\",\"semaines\"));",
+                  "pm.test(\"8 semaines\", () => pm.expect(s.semaines.length).to.eql(8));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenAdmin}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/admin/stats",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "admin",
+                "stats"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Modération · Liste des annonces",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Code 200\", () => pm.response.to.have.status(200));",
+                  "const d = pm.response.json();",
+                  "pm.test(\"Liste paginée\", () => pm.expect(d).to.include.keys(\"data\",\"total\",\"last_page\"));",
+                  "pm.test(\"Vendeur et catégorie inclus\", () => d.data.length && pm.expect(d.data[0]).to.include.keys(\"user\",\"categorie\",\"photos\",\"reservations_count\"));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenAdmin}}"
+              }
+            ],
+            "url": "{{baseUrl}}/admin/annonces"
+          }
+        },
+        {
+          "name": "Modération · Filtre « disponibles »",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Code 200\", () => pm.response.to.have.status(200));",
+                  "pm.test(\"Seulement des annonces disponibles\", () => pm.response.json().data.forEach(a => pm.expect(a.statut).to.eql(\"disponible\")));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenAdmin}}"
+              }
+            ],
+            "url": "{{baseUrl}}/admin/annonces?statut=disponible"
+          }
+        },
+        {
+          "name": "Modération · Accès refusé à un étudiant (403)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Code 403\", () => pm.response.to.have.status(403));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": "{{baseUrl}}/admin/annonces"
+          }
+        }
+      ]
+    },
+    {
+      "name": "7. Nettoyage",
+      "item": [
+        {
+          "name": "Supprimer le compte du vendeur",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Code 200\", () => pm.response.to.have.status(200));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/profile",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{tokenVendeur}}",
+                  "type": "string"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "SCRUM-11 · Déconnexion",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Code 200\", () => pm.response.to.have.status(200));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/logout",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "logout"
+              ]
+            },
+            "description": ""
+          }
+        },
+        {
+          "name": "SCRUM-11 · Token refusé après déconnexion",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Code 401\", () => pm.response.to.have.status(401));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/me",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "me"
+              ]
+            },
+            "description": ""
+          }
+        },
+        {
+          "name": "Reconnexion pour la suppression",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Code 200\", () => pm.response.to.have.status(200));",
+                  "pm.collectionVariables.set(\"token\", pm.response.json().token);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/login",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "login"
+              ]
+            },
+            "description": "",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"{{email}}\",\n  \"password\": \"{{password}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "SCRUM-14 · Supprimer son compte",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Code 200\", () => pm.response.to.have.status(200));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/profile",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "profile"
+              ]
+            },
+            "description": ""
+          }
+        },
+        {
+          "name": "SCRUM-14 · Connexion impossible après suppression",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Code 401\", () => pm.response.to.have.status(401));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/login",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "login"
+              ]
+            },
+            "description": "",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"{{email}}\",\n  \"password\": \"{{password}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        }
+      ]
+    }
+  ]
+}
