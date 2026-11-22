@@ -1,0 +1,13 @@
+#	Prénom Nom	E-mail	Rôle	Établissement	Mot de passe
+1	Campus Admin	admin@campusreuse.tn	admin	—	admin1234
+2	Etudiant Test	etudiant@campusreuse.tn	étudiant	ISET	etudiant1234
+3	Nour Bouchnak	Nour@campusreuse.tn	étudiant	Iset Mahdia	choisi à l’inscription
+4	ghada ridene	ghada@campusreuse.tn	étudiant	Iset Mahdia	choisi à l’inscription
+5	nourr bouchnak	nourbk46@gmail.com	étudiant	Iset Mahdia	choisi à l’inscription
+6	Test Postman	postman1794342519467@test.tn	étudiant	ISET Postman	password123
+9	Ghada Ben Ali	ghada@demo.tn	étudiant	ISET Mahdia	demo1234
+10	Sami Trabelsi	sami@demo.tn	étudiant	ISET Rades	demo1234
+11	Yasmine Gharbi	yasmine@demo.tn	étudiant	FST	demo1234
+12	Amine Jlassi	amine@demo.tn	étudiant	ENIT	demo1234
+13	Inès Mansouri	ines@demo.tn	étudiant	ISET Mahdia	demo1234
+14	Karim Haddad	karim@demo.tn	étudiant	ISET Rades	demo1234
