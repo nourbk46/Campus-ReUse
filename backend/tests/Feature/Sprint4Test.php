@@ -15,7 +15,6 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Notification;
 use Tests\TestCase;
 
-// Lancer : php artisan test --filter=Sprint4Test
 class Sprint4Test extends TestCase
 {
     use RefreshDatabase;
@@ -57,7 +56,6 @@ class Sprint4Test extends TestCase
         return Reservation::find($id);
     }
 
-    // ---------- SCRUM-28 : messagerie ----------
     public function test_envoyer_un_message_cree_une_conversation_liee_a_l_annonce(): void
     {
         $this->actingAs($this->acheteur, 'sanctum')->postJson('/api/conversations', [
@@ -90,7 +88,6 @@ class Sprint4Test extends TestCase
             'annonce_id' => $this->annonce->id, 'contenu' => 'Bonjour',
         ])->json('conversation.id');
 
-        // un 2e message de l'acheteur réutilise la même conversation
         $this->actingAs($this->acheteur, 'sanctum')->postJson('/api/conversations', [
             'annonce_id' => $this->annonce->id, 'contenu' => 'Je peux passer demain',
         ])->assertJsonPath('conversation.id', $cid);
@@ -115,11 +112,10 @@ class Sprint4Test extends TestCase
         $this->actingAs($tiers, 'sanctum')->postJson("/api/conversations/$cid/messages", ['contenu' => 'Hello'])->assertStatus(403);
     }
 
-    // ---------- SCRUM-30 : réserver ----------
     public function test_reserver_un_objet_en_attente(): void
     {
         $this->reserver()->assertCreated()->assertJsonPath('reservation.statut', 'en_attente');
-        $this->assertEquals('disponible', $this->annonce->fresh()->statut); // pas encore réservée
+        $this->assertEquals('disponible', $this->annonce->fresh()->statut); 
     }
 
     public function test_impossible_de_reserver_sa_propre_annonce(): void
@@ -136,7 +132,6 @@ class Sprint4Test extends TestCase
         $this->reserver($this->etudiant('autre@test.tn'))->assertStatus(422);
     }
 
-    // ---------- SCRUM-31 / SCRUM-48 : accepter / refuser ----------
     public function test_accepter_passe_l_annonce_en_reservee_et_refuse_les_autres(): void
     {
         $autre = $this->etudiant('autre@test.tn');
@@ -179,7 +174,6 @@ class Sprint4Test extends TestCase
         $this->assertEquals('disponible', $this->annonce->fresh()->statut);
     }
 
-    // ---------- SCRUM-32 : confirmer l'échange ----------
     public function test_confirmation_par_les_deux_etudiants_cede_l_annonce_et_cloture_la_demande(): void
     {
         $demande = $this->acheteur->demandes()->create([
@@ -189,7 +183,7 @@ class Sprint4Test extends TestCase
         app(MatchingService::class)->pourDemande($demande);
 
         $r = $this->reservationAcceptee();
-        $this->assertEquals($demande->id, $r->demande_id); // demande liée grâce au matching
+        $this->assertEquals($demande->id, $r->demande_id); 
 
         $this->actingAs($this->acheteur, 'sanctum')->postJson("/api/reservations/{$r->id}/confirmer")
             ->assertOk()->assertJsonPath('reservation.statut', 'acceptee');
@@ -231,7 +225,6 @@ class Sprint4Test extends TestCase
             ->assertOk()->assertJsonPath('0.statut', 'annulee');
     }
 
-    // ---------- SCRUM-34 : notifications par e-mail ----------
     public function test_notifications_envoyees_par_email(): void
     {
         $this->actingAs($this->acheteur, 'sanctum')->postJson('/api/conversations', [
@@ -247,7 +240,6 @@ class Sprint4Test extends TestCase
 
     public function test_aucun_email_si_desactive_dans_le_profil(): void
     {
-        // l'option se désactive depuis le profil
         $this->actingAs($this->vendeur, 'sanctum')->postJson('/api/profile', ['notifications_email' => false])->assertOk();
         $this->assertFalse($this->vendeur->fresh()->notifications_email);
 

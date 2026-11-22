@@ -8,14 +8,11 @@ use Illuminate\Support\Facades\Storage;
 
 class ProfileController extends Controller
 {
-    // SCRUM-13 — US-04 : Consulter son profil
     public function show(Request $request)
     {
         return response()->json($request->user());
     }
 
-    // SCRUM-44 — US-05 : Modifier son profil (photo, filière, niveau, mot de passe)
-    // Envoyé en POST (multipart/form-data) à cause de l'upload de photo.
     public function update(Request $request)
     {
         $user = $request->user();
@@ -59,13 +56,10 @@ class ProfileController extends Controller
         ]);
     }
 
-    // SCRUM-14 — US-06 : Supprimer son compte
-    // Les annonces seront supprimées automatiquement grâce au onDelete('cascade') du Sprint 2.
     public function destroy(Request $request)
     {
         $user = $request->user();
 
-        // Un administrateur ne peut pas supprimer son propre compte
         if ($user->isAdmin()) {
             return response()->json(['message' => 'Un administrateur ne peut pas supprimer son compte.'], 403);
         }
@@ -74,7 +68,6 @@ class ProfileController extends Controller
             Storage::disk('public')->delete($user->photo);
         }
 
-        // Photos des annonces (les lignes en base partent en cascade)
         foreach ($user->annonces()->with('photos')->get() as $annonce) {
             Storage::disk('public')->delete($annonce->photos->pluck('chemin')->all());
         }

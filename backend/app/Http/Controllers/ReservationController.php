@@ -15,7 +15,6 @@ class ReservationController extends Controller
     {
     }
 
-    // SCRUM-30 : POST /api/annonces/{annonce}/reserver
     public function store(Request $request, Annonce $annonce)
     {
         $this->service->expirerEnRetard();
@@ -29,7 +28,6 @@ class ReservationController extends Controller
         ], 201);
     }
 
-    // SCRUM-31 : GET /api/reservations/recues (sur mes annonces)
     public function recues(Request $request)
     {
         $this->service->expirerEnRetard();
@@ -42,7 +40,6 @@ class ReservationController extends Controller
         );
     }
 
-    // GET /api/reservations/envoyees (mes réservations)
     public function envoyees(Request $request)
     {
         $this->service->expirerEnRetard();
@@ -54,7 +51,6 @@ class ReservationController extends Controller
         );
     }
 
-    // SCRUM-31 : POST /api/reservations/{reservation}/accepter (propriétaire)
     public function accepter(Request $request, Reservation $reservation)
     {
         $this->service->expirerEnRetard();
@@ -63,7 +59,6 @@ class ReservationController extends Controller
         return $this->reponse($this->service->accepter($reservation->fresh()), 'Réservation acceptée. L\'annonce est maintenant « Réservée ».');
     }
 
-    // SCRUM-48 : POST /api/reservations/{reservation}/refuser (propriétaire)
     public function refuser(Request $request, Reservation $reservation)
     {
         $this->exigerProprietaire($request, $reservation);
@@ -71,7 +66,6 @@ class ReservationController extends Controller
         return $this->reponse($this->service->refuser($reservation), 'Réservation refusée. L\'annonce reste « Disponible ».');
     }
 
-    // POST /api/reservations/{reservation}/annuler (étudiant qui a réservé)
     public function annuler(Request $request, Reservation $reservation)
     {
         abort_unless($reservation->user_id === $request->user()->id, 403, 'Seul l\'étudiant qui a réservé peut annuler.');
@@ -79,7 +73,6 @@ class ReservationController extends Controller
         return $this->reponse($this->service->annuler($reservation), 'Réservation annulée.');
     }
 
-    // SCRUM-32 : POST /api/reservations/{reservation}/confirmer (les deux étudiants)
     public function confirmer(Request $request, Reservation $reservation)
     {
         $this->service->expirerEnRetard();
@@ -97,7 +90,6 @@ class ReservationController extends Controller
             : 'Confirmation enregistrée. En attente de la confirmation de l\'autre étudiant.');
     }
 
-    // ORDER BY CASE statut … : les réservations à traiter d'abord
     private static function ordre(array $statuts): string
     {
         $cas = collect($statuts)->map(fn ($s, $i) => "WHEN '$s' THEN $i")->implode(' ');

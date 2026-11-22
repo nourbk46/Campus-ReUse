@@ -5,7 +5,6 @@ import { ETATS_MIN } from "../annonces";
 import "./Annonces.css";
 import "./Demandes.css";
 
-// SCRUM-22 (publier) et SCRUM-23 (modifier) : formulaire de demande
 export default function DemandeForm() {
   const { id } = useParams();
   const edition = Boolean(id);
@@ -59,7 +58,6 @@ export default function DemandeForm() {
     setEnvoi(true);
     try {
       const { data } = edition ? await api.put(`/demandes/${id}`, payload) : await api.post("/demandes", payload);
-      // Après publication : directement aux propositions trouvées, sinon à la liste
       navigate(data.propositions > 0 ? `/propositions?demande=${data.demande.id}` : "/mes-demandes");
     } catch (error) {
       const { message, errors } = lireErreur(error);

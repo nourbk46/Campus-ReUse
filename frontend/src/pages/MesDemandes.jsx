@@ -5,7 +5,6 @@ import { ETATS_MIN, STATUTS_DEMANDE, budgetTexte, depuis } from "../annonces";
 import "./Annonces.css";
 import "./Demandes.css";
 
-// SCRUM-23 (modifier) et SCRUM-47 (supprimer) : page « Mes demandes »
 export default function MesDemandes() {
   const [demandes, setDemandes] = useState(null);
   const [message, setMessage] = useState({ texte: "", type: "" });

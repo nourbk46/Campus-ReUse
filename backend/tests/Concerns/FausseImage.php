@@ -4,7 +4,6 @@ namespace Tests\Concerns;
 
 use Illuminate\Http\UploadedFile;
 
-// Crée une vraie petite image PNG sans l'extension GD (absente de C:\php83)
 trait FausseImage
 {
     protected function fausseImage(string $nom = 'photo.png', int $tailleKo = 0): UploadedFile

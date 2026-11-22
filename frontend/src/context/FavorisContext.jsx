@@ -2,7 +2,6 @@ import { createContext, useCallback, useContext, useEffect, useState } from "rea
 import api from "../api";
 import { useAuth } from "./AuthContext";
 
-// Favoris (EF-12) : identifiants des annonces favorites, partagés par toutes les pages
 const FavorisContext = createContext({ ids: new Set(), basculer: async () => {} });
 
 export function FavorisProvider({ children }) {
@@ -14,7 +13,6 @@ export function FavorisProvider({ children }) {
     api.get("/favoris/ids").then(({ data }) => setIds(new Set(data))).catch(() => {});
   }, [user?.id]);
 
-  // Ajoute ou retire immédiatement, puis annule si le serveur refuse
   const basculer = useCallback(async (annonceId) => {
     const etait = ids.has(annonceId);
     const maj = (ajouter) => setIds((prev) => {

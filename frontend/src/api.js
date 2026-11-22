@@ -1,19 +1,16 @@
 import axios from "axios";
 
-// Les appels /api sont relayés vers Laravel (http://localhost:8000) par Vite (voir vite.config.js)
 const api = axios.create({
   baseURL: "/api",
   headers: { Accept: "application/json" },
 });
 
-// Ajoute le token Sanctum à chaque requête
 api.interceptors.request.use((config) => {
   const token = localStorage.getItem("token");
   if (token) config.headers.Authorization = `Bearer ${token}`;
   return config;
 });
 
-// Token expiré ou supprimé : on vide la session
 api.interceptors.response.use(
   (res) => res,
   (error) => {
@@ -26,7 +23,6 @@ api.interceptors.response.use(
   }
 );
 
-// Transforme une erreur Laravel en { message, errors }
 export function lireErreur(error) {
   const data = error.response?.data || {};
   return {

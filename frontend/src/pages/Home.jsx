@@ -31,7 +31,6 @@ function Icon({ name }) {
   return <svg {...common}>{icons[name]}</svg>;
 }
 
-// Exemples affichés si la base ne contient encore aucune annonce
 const VITRINE = [
   { titre: "Calculatrice TI-83 Premium", categorie: "Informatique", type: "vente", prix: 45, emoji: "🧮" },
   { titre: "Lot de manuels de L1", categorie: "Livres & cours", type: "don", emoji: "📚" },
@@ -42,7 +41,6 @@ function Landing() {
   const [annonces, setAnnonces] = useState([]);
   const [total, setTotal] = useState(null);
 
-  // Les 3 dernières vraies annonces du site
   useEffect(() => {
     api.get("/annonces", { params: { per_page: 3 } })
       .then(({ data }) => { setAnnonces(data.data || []); setTotal(data.total ?? null); })
@@ -258,7 +256,6 @@ function Kpi({ icon, label, value, hint, tone }) {
   );
 }
 
-// Barres : annonces publiées par semaine (une seule série, une seule couleur)
 function ActiviteChart({ data }) {
   const max = Math.max(1, ...data.map((d) => d.total));
   const total = data.reduce((s, d) => s + d.total, 0);
@@ -285,7 +282,6 @@ function ActiviteChart({ data }) {
   );
 }
 
-// Barre segmentée : répartition par type, avec légende et valeurs
 function RepartitionTypes({ m }) {
   const items = [
     { key: "vente", n: m.ventes },
@@ -519,6 +515,6 @@ function Dashboard({ user }) {
 export default function Home() {
   const { user, isAuthenticated } = useAuth();
 
-  if (isAuthenticated && user?.role === "admin") return <Navigate to="/admin" replace />; // l'admin a son propre tableau de bord
+  if (isAuthenticated && user?.role === "admin") return <Navigate to="/admin" replace />;
   return isAuthenticated ? <Dashboard user={user} /> : <Landing />;
 }

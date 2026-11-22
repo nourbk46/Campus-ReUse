@@ -8,7 +8,6 @@ use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
 
-// "name" (colonne d'origine de Laravel) contient le NOM de famille, "prenom" le prénom.
 class User extends Authenticatable implements MustVerifyEmail
 {
     use HasApiTokens, HasFactory, Notifiable;
@@ -54,13 +53,11 @@ class User extends Authenticatable implements MustVerifyEmail
         return $this->hasMany(Reservation::class);
     }
 
-    // SCRUM-34 : notifications par e-mail seulement si l'option est activée dans le profil
     public function veutEmails(): bool
     {
         return (bool) $this->notifications_email;
     }
 
-    // Favoris (EF-12)
     public function favoris()
     {
         return $this->belongsToMany(Annonce::class, 'favoris')->withTimestamps();

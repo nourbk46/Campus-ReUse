@@ -5,7 +5,6 @@ import { prixTexte } from "../annonces";
 import "./Annonces.css";
 import "./Echanges.css";
 
-// SCRUM-30 / 31 / 48 / 32 : réservations reçues (sur mes annonces) et envoyées (mes réservations)
 const STATUTS = {
   en_attente: "En attente",
   acceptee: "Acceptée",
@@ -96,7 +95,6 @@ export default function Reservations() {
     }
   };
 
-  // Les actions importantes demandent une confirmation
   const onAction = (r, action) => (["accepter", "confirmer", "annuler"].includes(action) ? setAConfirmer({ r, action }) : executer(r, action));
 
   const liste = listes[onglet];

@@ -9,11 +9,8 @@ use App\Notifications\CampusNotification;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 
-// Gestion des utilisateurs par l'administrateur
-//   SCRUM-38 consulter · SCRUM-49 bloquer · SCRUM-50 débloquer · SCRUM-51 supprimer
 class UserController extends Controller
 {
-    // GET /api/admin/users?search=&role=&bloque=&per_page=&page=
     public function index(Request $request)
     {
         $request->validate([
@@ -41,7 +38,6 @@ class UserController extends Controller
         return response()->json($users);
     }
 
-    // GET /api/admin/users/{user} — fiche détaillée
     public function show(User $user)
     {
         $user->loadCount(['annonces', 'demandes', 'favoris'])
@@ -55,7 +51,6 @@ class UserController extends Controller
         ]);
     }
 
-    // SCRUM-49 : POST /api/admin/users/{user}/bloquer
     public function bloquer(Request $request, User $user)
     {
         $this->protegerAdmins($request, $user, 'bloquer');
@@ -85,8 +80,6 @@ class UserController extends Controller
         return response()->json(['message' => "{$user->prenom} {$user->name} est débloqué(e).", 'user' => $user->fresh()]);
     }
 
-    // SCRUM-51 : DELETE /api/admin/users/{user}
-    // (annonces, demandes, messages, réservations et favoris sont supprimés en cascade)
     public function destroy(Request $request, User $user)
     {
         $this->protegerAdmins($request, $user, 'supprimer');

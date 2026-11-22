@@ -1,6 +1,4 @@
-/* Sprint 3 — demandes et propositions (complète Annonces.css) */
 
-/* Mes demandes */
 .dem-liste { list-style: none; padding: 0; margin: 0; display: grid; gap: 12px; }
 .dem-item {
   display: grid;
@@ -30,7 +28,6 @@
 .dem-match small, .dem-match-vide small { color: #64748b; font-size: 12px; }
 .dem-match-vide { color: #475569; }
 
-/* Formulaire */
 .champ .aide { color: #64748b; font-size: 12.5px; }
 .dem-check { display: flex !important; align-items: center; gap: 10px; font-weight: 500 !important; color: #334155; cursor: pointer; }
 .dem-check input { width: 18px !important; height: 18px; accent-color: #2563eb; }

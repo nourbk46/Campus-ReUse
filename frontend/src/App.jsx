@@ -24,9 +24,8 @@ import Propositions from "./pages/Propositions";
 import Messages from "./pages/Messages";
 import Reservations from "./pages/Reservations";
 import MesFavoris from "./pages/MesFavoris";
-import "./styles/espace-etudiant.css"; // habillage commun des pages étudiant (chargé en dernier)
+import "./styles/espace-etudiant.css"; 
 
-// Les pages de connexion/inscription ne sont pas accessibles si on est déjà connecté
 function GuestOnly({ children }) {
   const { user } = useAuth();
   if (user) return <Navigate to={user.role === "admin" ? "/admin" : "/"} replace />;

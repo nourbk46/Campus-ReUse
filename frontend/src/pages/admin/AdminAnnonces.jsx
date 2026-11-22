@@ -3,7 +3,6 @@ import { Link, useSearchParams } from "react-router-dom";
 import api, { lireErreur } from "../../api";
 import { ETATS, TYPES } from "../../annonces";
 
-// Modération des annonces : consulter, rechercher, filtrer, supprimer
 const STATUTS = { disponible: "Disponible", reservee: "Réservée", cedee: "Cédée" };
 const nb = (n) => Number(n || 0).toLocaleString("fr-FR");
 

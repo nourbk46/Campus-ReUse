@@ -5,7 +5,6 @@ namespace App\Console\Commands;
 use App\Services\ReservationService;
 use Illuminate\Console\Command;
 
-// SCRUM-32 : php artisan reservations:expirer (lancée chaque jour par le planificateur)
 class ExpirerReservations extends Command
 {
     protected $signature = 'reservations:expirer';

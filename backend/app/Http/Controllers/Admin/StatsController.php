@@ -13,17 +13,14 @@ use App\Models\Reservation;
 use App\Models\User;
 use Illuminate\Support\Facades\DB;
 
-// Statistiques de la plateforme (dashboard administrateur)
 class StatsController extends Controller
 {
-    // GET /api/admin/stats
     public function index()
     {
         $etudiants = User::where('role', 'etudiant');
         $il7j = now()->subDays(7);
         $il14j = now()->subDays(14);
 
-        // ---- 8 dernières semaines : inscriptions, annonces, échanges terminés ----
         $debut = now()->startOfWeek()->subWeeks(7);
         $inscrits = User::where('role', 'etudiant')->where('created_at', '>=', $debut)->pluck('created_at');
         $publiees = Annonce::where('created_at', '>=', $debut)->pluck('created_at');

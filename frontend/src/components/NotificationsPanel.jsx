@@ -2,7 +2,6 @@ import { useState } from "react";
 import api, { lireErreur } from "../api";
 import { useAuth } from "../context/AuthContext";
 
-// SCRUM-34 : activer / désactiver les notifications par e-mail (panneau du profil)
 export default function NotificationsPanel({ profil, onChange }) {
   const { saveUser } = useAuth();
   const [actif, setActif] = useState(Boolean(profil.notifications_email));

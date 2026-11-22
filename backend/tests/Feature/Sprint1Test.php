@@ -13,7 +13,6 @@ use Illuminate\Support\Facades\Storage;
 use Tests\Concerns\FausseImage;
 use Tests\TestCase;
 
-// Lancer : php artisan test --filter=Sprint1Test
 class Sprint1Test extends TestCase
 {
     use RefreshDatabase, FausseImage;
@@ -27,7 +26,6 @@ class Sprint1Test extends TestCase
         ], $extra));
     }
 
-    // ---- SCRUM-10 ----
     public function test_inscription_reussie_envoie_email_et_crypte_mdp(): void
     {
         Notification::fake();
@@ -54,7 +52,7 @@ class Sprint1Test extends TestCase
         ])->assertStatus(422)->assertJsonValidationErrors(['email', 'password']);
     }
 
-    // ---- SCRUM-11 ----
+
     public function test_connexion_et_deconnexion(): void
     {
         $this->etudiant();
@@ -75,7 +73,6 @@ class Sprint1Test extends TestCase
         $this->postJson('/api/login', ['email' => 'sami@test.tn', 'password' => 'password123'])->assertStatus(429);
     }
 
-    // ---- SCRUM-12 ----
     public function test_reinitialisation_mot_de_passe(): void
     {
         Notification::fake();
@@ -107,7 +104,6 @@ class Sprint1Test extends TestCase
         ])->assertStatus(422);
     }
 
-    // ---- SCRUM-13 / SCRUM-44 ----
     public function test_consulter_et_modifier_profil_avec_photo(): void
     {
         Storage::fake('public');
@@ -136,7 +132,6 @@ class Sprint1Test extends TestCase
         ])->assertStatus(422);
     }
 
-    // ---- SCRUM-14 ----
     public function test_suppression_compte(): void
     {
         $user = $this->etudiant();

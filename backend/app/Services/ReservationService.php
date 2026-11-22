@@ -10,21 +10,13 @@ use App\Notifications\CampusNotification;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
 
-/**
- * Cycle de vie d'une réservation (Sprint 4)
- *
- *   en_attente ──accepter──▶ acceptee ──(2 confirmations)──▶ terminee   (annonce « Cédée »)
- *        │                       │
- *        ├──refuser──▶ refusee   └──annuler / 7 jours sans confirmation──▶ annulee (annonce « Disponible »)
- *        └──annuler──▶ annulee
- */
+
 class ReservationService
 {
     public function __construct(private MatchingService $matching)
     {
     }
 
-    // SCRUM-30 : réserver un objet
     public function reserver(Annonce $annonce, User $user, ?string $message = null): Reservation
     {
         if ($annonce->user_id === $user->id) {
@@ -39,7 +31,6 @@ class ReservationService
             $this->erreur('annonce', 'Tu as déjà une réservation en cours pour cet objet.');
         }
 
-        // Demande liée : la demande ouverte de l'étudiant qui correspondait à cette annonce (matching)
         $demandeId = MatchResult::where('annonce_id', $annonce->id)
             ->whereHas('demande', fn ($q) => $q->where('user_id', $user->id)->where('statut', 'ouverte'))
             ->orderByDesc('score')->value('demande_id');
@@ -62,7 +53,6 @@ class ReservationService
         return $reservation;
     }
 
-    // SCRUM-31 : accepter (propriétaire)
     public function accepter(Reservation $r): Reservation
     {
         $this->exigerStatut($r, ['en_attente'], 'Seule une réservation en attente peut être acceptée.');
@@ -97,7 +87,6 @@ class ReservationService
         return $r->fresh();
     }
 
-    // SCRUM-48 : refuser (propriétaire) — l'annonce reste « Disponible »
     public function refuser(Reservation $r, ?string $raison = null): Reservation
     {
         $this->exigerStatut($r, ['en_attente'], 'Seule une réservation en attente peut être refusée.');
@@ -113,7 +102,6 @@ class ReservationService
         return $r->fresh();
     }
 
-    // Annulation par l'étudiant qui a réservé
     public function annuler(Reservation $r): Reservation
     {
         $this->exigerStatut($r, ['en_attente', 'acceptee'], 'Cette réservation ne peut plus être annulée.');
@@ -135,7 +123,6 @@ class ReservationService
         return $r->fresh();
     }
 
-    // SCRUM-32 : confirmer la remise (les deux étudiants)
     public function confirmer(Reservation $r, User $user): Reservation
     {
         $this->exigerStatut($r, ['acceptee'], 'Seule une réservation acceptée peut être confirmée.');
@@ -151,9 +138,9 @@ class ReservationService
         if ($r->confirme_vendeur_at && $r->confirme_acheteur_at) {
             DB::transaction(function () use ($r) {
                 $r->update(['statut' => 'terminee']);
-                $r->annonce->update(['statut' => 'cedee']);           // annonce « Cédée »
+                $r->annonce->update(['statut' => 'cedee']);          
                 if ($r->demande && $r->demande->statut === 'ouverte') {
-                    $r->demande->update(['statut' => 'cloturee']);   // demande liée clôturée
+                    $r->demande->update(['statut' => 'cloturee']);  
                 }
             });
             $this->matching->pourAnnonce($r->annonce->fresh());
@@ -181,7 +168,6 @@ class ReservationService
         return $r->fresh();
     }
 
-    // SCRUM-32 : réservations acceptées non confirmées sous 7 jours → annulées
     public function expirerEnRetard(): int
     {
         $enRetard = Reservation::with(['annonce.user', 'acheteur'])
@@ -204,8 +190,6 @@ class ReservationService
 
         return $enRetard->count();
     }
-
-    // ---------- Outils ----------
 
     private function remettreDisponible(Reservation $r): void
     {

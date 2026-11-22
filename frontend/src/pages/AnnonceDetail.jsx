@@ -7,7 +7,6 @@ import "./Annonces.css";
 import "./Echanges.css";
 import FavoriButton from "../components/FavoriButton";
 
-// Détail d'une annonce (ouvert depuis la liste)
 export default function AnnonceDetail() {
   const { id } = useParams();
   const { user } = useAuth();
@@ -89,7 +88,6 @@ export default function AnnonceDetail() {
   );
 }
 
-// SCRUM-28 (contacter) et SCRUM-30 (réserver)
 function ActionsAnnonce({ annonce, proprio, user }) {
   const navigate = useNavigate();
   const [ecrire, setEcrire] = useState(false);

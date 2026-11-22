@@ -8,12 +8,10 @@ use App\Models\Message;
 use App\Notifications\CampusNotification;
 use Illuminate\Http\Request;
 
-// SCRUM-28 : messagerie entre étudiants (une conversation par annonce et par acheteur)
 class ConversationController extends Controller
 {
     private const USER = 'id,name,prenom,etablissement,photo';
 
-    // GET /api/conversations
     public function index(Request $request)
     {
         $moi = $request->user()->id;
@@ -28,13 +26,11 @@ class ConversationController extends Controller
         return response()->json($conversations);
     }
 
-    // GET /api/messages/non-lus (badge de la barre de navigation)
     public function nonLus(Request $request)
     {
         return response()->json(['non_lus' => $this->compterNonLus($request->user()->id)]);
     }
 
-    // GET /api/conversations/{conversation} — marque les messages reçus comme lus
     public function show(Request $request, Conversation $conversation)
     {
         abort_unless($conversation->participe($request->user()), 403, 'Cette conversation ne te concerne pas.');
@@ -49,7 +45,6 @@ class ConversationController extends Controller
         );
     }
 
-    // POST /api/conversations  { annonce_id, contenu } — premier message au propriétaire
     public function store(Request $request)
     {
         $data = $request->validate([
@@ -74,7 +69,6 @@ class ConversationController extends Controller
         ], 201);
     }
 
-    // POST /api/conversations/{conversation}/messages  { contenu }
     public function envoyer(Request $request, Conversation $conversation)
     {
         abort_unless($conversation->participe($request->user()), 403, 'Cette conversation ne te concerne pas.');
@@ -92,7 +86,6 @@ class ConversationController extends Controller
         $moi = $request->user();
         $destinataire = $conversation->autre($moi);
 
-        // E-mail seulement pour le premier message non lu (évite un e-mail à chaque message)
         $dejaNonLu = $conversation->messages()->where('user_id', $moi->id)->whereNull('lu_at')->exists();
 
         $message = $conversation->messages()->create(['user_id' => $moi->id, 'contenu' => $contenu]);

@@ -1,7 +1,6 @@
 import { useEffect, useState } from "react";
 import api, { lireErreur } from "../../api";
 
-// SCRUM-39 ajouter · SCRUM-52 modifier · SCRUM-53 supprimer
 export default function AdminCategories() {
   const [cats, setCats] = useState(null);
   const [nouvelle, setNouvelle] = useState({ nom: "", icone: "" });

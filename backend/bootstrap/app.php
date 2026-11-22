@@ -12,17 +12,14 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware): void {
-        // Pas de page de connexion web : les visiteurs non connectés ne sont pas redirigés
         $middleware->redirectGuestsTo(fn () => null);
 
-        // Middleware « admin » : réservé aux administrateurs
         $middleware->alias([
             'admin' => \App\Http\Middleware\EnsureAdmin::class,
             'etudiant' => \App\Http\Middleware\EnsureEtudiant::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
-        // Les routes /api répondent toujours en JSON (ex. 401 Unauthenticated), même depuis le navigateur
         $exceptions->shouldRenderJsonWhen(
             fn ($request, $e) => $request->is('api/*') || $request->expectsJson()
         );

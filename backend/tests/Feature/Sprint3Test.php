@@ -14,7 +14,6 @@ use Illuminate\Support\Facades\Storage;
 use Tests\Concerns\FausseImage;
 use Tests\TestCase;
 
-// Lancer : php artisan test --filter=Sprint3Test
 class Sprint3Test extends TestCase
 {
     use RefreshDatabase, FausseImage;
@@ -57,7 +56,6 @@ class Sprint3Test extends TestCase
         ], $extra));
     }
 
-    // ---- SCRUM-22 : publier une demande ----
     public function test_publier_une_demande_statut_ouverte(): void
     {
         $this->demande($this->etudiant('ali@test.tn'))
@@ -81,7 +79,6 @@ class Sprint3Test extends TestCase
         $this->postJson('/api/demandes', [])->assertStatus(401);
     }
 
-    // ---- SCRUM-23 / SCRUM-47 ----
     public function test_l_auteur_peut_modifier_et_supprimer_sa_demande(): void
     {
         $u = $this->etudiant('ali@test.tn');
@@ -119,7 +116,6 @@ class Sprint3Test extends TestCase
         $this->assertEquals(1, $calc['propositions_count']);
     }
 
-    // ---- SCRUM-24 : matching ----
     public function test_matching_a_la_publication_d_une_demande(): void
     {
         $vendeur = $this->etudiant('vendeur@test.tn');
@@ -141,7 +137,6 @@ class Sprint3Test extends TestCase
         $u = $this->etudiant('ali@test.tn');
         $this->demande($u)->assertJsonPath('propositions', 0);
 
-        // Une annonce publiée APRÈS la demande déclenche le matching
         $vendeur = $this->etudiant('vendeur@test.tn');
         $this->actingAs($vendeur, 'sanctum')->post('/api/annonces', [
             'titre' => 'Calculatrice graphique Casio', 'categorie_id' => $this->info->id,
@@ -154,14 +149,14 @@ class Sprint3Test extends TestCase
     public function test_filtres_du_matching(): void
     {
         $v = $this->etudiant('vendeur@test.tn');
-        $bonne = $this->annonce($v);                                                    // OK
-        $this->annonce($v, ['categorie_id' => $this->livres->id]);                      // autre catégorie
-        $this->annonce($v, ['prix' => 90]);                                             // au-dessus du budget
-        $this->annonce($v, ['etat' => 'use']);                                          // état insuffisant
-        $this->annonce($v, ['statut' => 'reservee']);                                   // pas disponible
+        $bonne = $this->annonce($v);                                                  
+        $this->annonce($v, ['categorie_id' => $this->livres->id]);                   
+        $this->annonce($v, ['prix' => 90]);                                            
+        $this->annonce($v, ['etat' => 'use']);                                        
+        $this->annonce($v, ['statut' => 'reservee']);                                
 
         $u = $this->etudiant('ali@test.tn');
-        $this->annonce($u);                                                              // sa propre annonce
+        $this->annonce($u);                                                         
         $this->demande($u);
 
         $this->assertEquals([$bonne->id], MatchResult::pluck('annonce_id')->all());
@@ -176,7 +171,6 @@ class Sprint3Test extends TestCase
 
     public function test_seuil_minimum_de_50(): void
     {
-        // Mots-clés différents, prix = budget, état usé, autre établissement : 0 + 15 + 5 + 0 = 20 < 50
         $this->annonce($this->etudiant('vendeur@test.tn', 'FST'), [
             'titre' => 'Souris sans fil', 'description' => 'Logitech', 'etat' => 'use', 'prix' => 50,
         ]);
@@ -211,7 +205,6 @@ class Sprint3Test extends TestCase
         $this->assertGreaterThan(0, MatchResult::count());
     }
 
-    // ---- SCRUM-25 : propositions ----
     public function test_propositions_triees_par_score_et_seulement_disponibles(): void
     {
         $proche = $this->etudiant('proche@test.tn', 'ISET Rades');
@@ -224,7 +217,6 @@ class Sprint3Test extends TestCase
         $ids = collect($this->actingAs($u, 'sanctum')->getJson('/api/propositions')->assertOk()->json())->pluck('annonce_id')->all();
         $this->assertEquals([$meilleure->id, $moinsBonne->id], $ids);
 
-        // L'annonce réservée disparaît des propositions
         $meilleure->update(['statut' => 'reservee']);
         $this->actingAs($u, 'sanctum')->getJson('/api/propositions')->assertJsonCount(1);
     }

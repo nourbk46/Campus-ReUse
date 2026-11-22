@@ -7,7 +7,6 @@ import { STATUTS } from "../annonces";
 import "./Annonces.css";
 import "./Favoris.css";
 
-// Favoris (EF-12) : page « Mes favoris »
 export default function MesFavoris() {
   const { ids } = useFavoris();
   const [annonces, setAnnonces] = useState(null);
@@ -17,7 +16,6 @@ export default function MesFavoris() {
     api.get("/favoris").then(({ data }) => setAnnonces(data)).catch((e) => setErreur(lireErreur(e).message));
   }, []);
 
-  // Une annonce retirée avec le cœur disparaît de la page
   const visibles = annonces?.filter((a) => ids.has(a.id)) ?? null;
 
   return (

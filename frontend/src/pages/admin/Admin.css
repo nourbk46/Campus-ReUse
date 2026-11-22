@@ -224,7 +224,7 @@ a.adm-kpi:hover { border-color: #2563eb; text-decoration: none; }
 .adm-edit .adm-erreur { width: 100%; margin: 0 !important; }
 
 /* Fenêtres */
-.adm-overlay { position: fixed; inset: 0; z-index: 60; background: rgba(15, 23, 42, .45); display: flex; justify-content: flex-end; }
+.adm-overlay { position: fixed; inset: 0; z-index: 300; background: rgba(15, 23, 42, .45); display: flex; justify-content: flex-end; }
 .adm-overlay-centre { align-items: center; justify-content: center; padding: 16px; }
 .adm-fiche {
   position: relative;

@@ -11,7 +11,6 @@ export default function Navbar() {
   const location = useLocation();
   const [nonLus, setNonLus] = useState(0);
 
-  // Badge des messages non lus (actualisé au changement de page et toutes les 30 s)
   useEffect(() => {
     if (!user || user.role === "admin") return; // pas de messagerie pour l'admin
     const lire = () => api.get("/messages/non-lus").then(({ data }) => setNonLus(data.non_lus)).catch(() => {});
@@ -60,7 +59,6 @@ export default function Navbar() {
                 Annonces
               </NavLink>
 
-              {/* L'administrateur ne voit que l'administration (Sprint 5) */}
               {user.role !== "admin" && (<>
               <NavLink to="/mes-annonces" className={linkClass}>
                 Mes annonces

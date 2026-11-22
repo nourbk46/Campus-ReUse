@@ -6,7 +6,6 @@ import { prixTexte } from "../annonces";
 import "./Annonces.css";
 import "./Echanges.css";
 
-// SCRUM-28 : messagerie — liste des conversations + discussion (actualisée toutes les 5 s)
 function heure(date) {
   const d = new Date(date);
   const auj = new Date().toDateString() === d.toDateString();
@@ -40,7 +39,6 @@ export default function Messages() {
 
   useEffect(() => { chargerListe(); }, []);
 
-  // Ouvre la conversation sélectionnée et l'actualise régulièrement
   useEffect(() => {
     setConv(null);
     setErreur("");

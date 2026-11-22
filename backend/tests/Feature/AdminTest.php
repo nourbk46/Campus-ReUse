@@ -12,7 +12,6 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Notification;
 use Tests\TestCase;
 
-// Lancer : php artisan test --filter=AdminTest
 class AdminTest extends TestCase
 {
     use RefreshDatabase;
@@ -47,7 +46,6 @@ class AdminTest extends TestCase
         return $this->actingAs($this->admin, 'sanctum');
     }
 
-    // ---------- Accès ----------
     public function test_un_etudiant_n_a_pas_acces_a_l_administration(): void
     {
         foreach (['/api/admin/users', '/api/admin/categories', '/api/admin/stats'] as $url) {
@@ -56,7 +54,6 @@ class AdminTest extends TestCase
         $this->actingAs($this->etudiant, 'sanctum')->postJson("/api/admin/users/{$this->etudiant->id}/bloquer")->assertStatus(403);
     }
 
-    // ---------- SCRUM-38 : consulter ----------
     public function test_consulter_et_rechercher_les_utilisateurs(): void
     {
         $this->compte('yasmine@test.tn');
@@ -68,7 +65,6 @@ class AdminTest extends TestCase
             ->assertJsonPath('email', 'sami@test.tn')->assertJsonPath('annonces_count', 1);
     }
 
-    // ---------- SCRUM-49 / 50 : bloquer, débloquer ----------
     public function test_un_compte_bloque_ne_peut_plus_se_connecter(): void
     {
         $token = $this->etudiant->createToken('t')->plainTextToken;
@@ -111,7 +107,6 @@ class AdminTest extends TestCase
         $this->admin()->deleteJson("/api/admin/users/{$this->admin->id}")->assertStatus(422);
     }
 
-    // ---------- SCRUM-51 : supprimer ----------
     public function test_supprimer_un_utilisateur_et_ses_donnees(): void
     {
         $a = $this->annonce($this->etudiant);
@@ -121,7 +116,6 @@ class AdminTest extends TestCase
         $this->assertDatabaseMissing('annonces', ['id' => $a->id]);
     }
 
-    // ---------- SCRUM-39 / 52 / 53 : catégories ----------
     public function test_ajouter_une_categorie_sans_doublon(): void
     {
         $this->admin()->postJson('/api/admin/categories', ['nom' => 'Mobilier', 'icone' => '🪑'])
@@ -170,7 +164,6 @@ class AdminTest extends TestCase
         $this->admin()->getJson('/api/admin/categories')->assertOk()->assertJsonPath('0.annonces_count', 1);
     }
 
-    // ---------- Statistiques ----------
     public function test_statistiques_de_la_plateforme(): void
     {
         $this->annonce($this->etudiant);

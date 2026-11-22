@@ -3,7 +3,6 @@ import { Link } from "react-router-dom";
 import api, { lireErreur } from "../../api";
 import { useAuth } from "../../context/AuthContext";
 
-// Dashboard administrateur (Sprint 5) : toute l'activité de la plateforme
 const SERIES = [
   { cle: "inscriptions", label: "Inscriptions", couleur: "#2563eb" },
   { cle: "annonces", label: "Annonces publiées", couleur: "#0d9488" },
@@ -118,7 +117,6 @@ function Courbes({ semaines }) {
   );
 }
 
-// Anneau : répartition des annonces par statut
 function Anneau({ annonces }) {
   const total = annonces.total;
   const r = 52, c = 2 * Math.PI * r;

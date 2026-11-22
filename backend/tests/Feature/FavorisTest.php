@@ -9,7 +9,6 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Hash;
 use Tests\TestCase;
 
-// Lancer : php artisan test --filter=FavorisTest
 class FavorisTest extends TestCase
 {
     use RefreshDatabase;

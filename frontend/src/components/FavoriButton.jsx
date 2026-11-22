@@ -2,14 +2,13 @@ import { useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { useFavoris } from "../context/FavorisContext";
 
-// Bouton cœur : ajoute / retire une annonce des favoris
 export default function FavoriButton({ annonce, variante = "carte" }) {
   const { user } = useAuth();
   const { ids, basculer } = useFavoris();
   const navigate = useNavigate();
 
-  if (user && user.id === annonce.user_id) return null; // pas sur ses propres annonces
-  if (user?.role === "admin") return null;                // l'admin ne met pas en favori
+  if (user && user.id === annonce.user_id) return null; 
+  if (user?.role === "admin") return null;                
 
   const actif = ids.has(annonce.id);
   const onClick = (e) => {

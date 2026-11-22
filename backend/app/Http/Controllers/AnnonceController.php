@@ -13,11 +13,8 @@ use Illuminate\Validation\ValidationException;
 
 class AnnonceController extends Controller
 {
-    // Informations publiques du propriétaire renvoyées avec chaque annonce
     private const AUTEUR = 'user:id,name,prenom,etablissement,photo';
 
-    // SCRUM-15 (liste) + SCRUM-20 (recherche) + SCRUM-21 (filtres et tri)
-    // GET /api/annonces?q=&categorie=&type=&etat=&prix_min=&prix_max=&tri=&page=
     public function index(Request $request)
     {
         $request->validate([
@@ -35,20 +32,17 @@ class AnnonceController extends Controller
             ->where('statut', 'disponible') // seules les annonces « Disponible »
             ->whereHas('user', fn ($u) => $u->where('bloque', false)); // pas celles des comptes bloqués
 
-        // SCRUM-20 : mot-clé dans le titre ou la description
         if ($request->filled('q')) {
             $mot = '%' . $request->q . '%';
             $query->where(fn ($w) => $w->where('titre', 'like', $mot)->orWhere('description', 'like', $mot));
         }
 
-        // SCRUM-21 : filtres
         $query->when($request->categorie, fn ($q, $v) => $q->where('categorie_id', $v))
               ->when($request->type, fn ($q, $v) => $q->where('type', $v))
               ->when($request->etat, fn ($q, $v) => $q->where('etat', $v))
               ->when($request->filled('prix_min'), fn ($q) => $q->whereRaw('COALESCE(prix, 0) >= ?', [$request->prix_min]))
               ->when($request->filled('prix_max'), fn ($q) => $q->whereRaw('COALESCE(prix, 0) <= ?', [$request->prix_max]));
 
-        // SCRUM-21 : tri par date (défaut : plus récente d'abord) ou par prix (un don vaut 0)
         match ($request->input('tri', 'recent')) {
             'ancien'    => $query->orderBy('created_at')->orderBy('id'),
             'prix_asc'  => $query->orderByRaw('COALESCE(prix, 0) asc')->latest(),
@@ -59,13 +53,11 @@ class AnnonceController extends Controller
         return response()->json($query->paginate($request->integer('per_page', 12))->withQueryString());
     }
 
-    // GET /api/annonces/{annonce}
     public function show(Annonce $annonce)
     {
         return response()->json($annonce->load(['photos', 'categorie', self::AUTEUR]));
     }
 
-    // SCRUM-17 : publier une annonce (multipart/form-data)
     public function store(Request $request)
     {
         $data = $this->valider($request, creation: true);
@@ -84,7 +76,6 @@ class AnnonceController extends Controller
         ], 201);
     }
 
-    // SCRUM-18 : modifier son annonce (POST multipart ou PUT JSON)
     public function update(Request $request, Annonce $annonce)
     {
         Gate::authorize('update', $annonce); // 403 si ce n'est pas le propriétaire
@@ -128,7 +119,6 @@ class AnnonceController extends Controller
         ]);
     }
 
-    // SCRUM-46 : supprimer son annonce
     public function destroy(Annonce $annonce)
     {
         Gate::authorize('delete', $annonce);
@@ -136,12 +126,11 @@ class AnnonceController extends Controller
         foreach ($annonce->photos as $photo) {
             Storage::disk('public')->delete($photo->chemin);
         }
-        $annonce->delete(); // les lignes annonce_photos partent en cascade
+        $annonce->delete(); 
 
         return response()->json(['message' => 'Annonce supprimée.']);
     }
 
-    // SCRUM-18 / SCRUM-46 : page « Mes annonces » (tous statuts)
     public function mesAnnonces(Request $request)
     {
         return response()->json(
@@ -149,18 +138,13 @@ class AnnonceController extends Controller
         );
     }
 
-    // Statistiques du tableau de bord (page d'accueil connectée)
-    // GET /api/dashboard
     public function dashboard(Request $request)
     {
         $user = $request->user();
         $mes = $user->annonces()->with(['photos', 'categorie'])->latest()->get();
-
-        // Mes annonces par statut et par type
         $parStatut = $mes->countBy('statut');
         $parType = $mes->countBy('type');
 
-        // Activité : annonces publiées par semaine (8 dernières semaines)
         $debut = now()->startOfWeek()->subWeeks(7);
         $activite = collect(range(0, 7))->map(function ($i) use ($debut, $mes) {
             $lundi = $debut->copy()->addWeeks($i);
@@ -172,14 +156,12 @@ class AnnonceController extends Controller
             ];
         })->values();
 
-        // Répartition de mes annonces par catégorie
         $categories = $mes->groupBy('categorie_id')->map(fn ($g) => [
             'nom'   => $g->first()->categorie?->nom,
             'icone' => $g->first()->categorie?->icone,
             'total' => $g->count(),
         ])->sortByDesc('total')->values();
 
-        // Complétion du profil
         $champs = [
             'photo'         => ['Photo de profil', (bool) $user->photo],
             'filiere'       => ['Filière', (bool) $user->filiere],
@@ -191,7 +173,6 @@ class AnnonceController extends Controller
         $faits = collect($champs)->filter(fn ($c) => $c[1])->count();
 
         return response()->json([
-            // ancien format conservé
             'stats' => [
                 'annonces' => $mes->count(),
                 'messages' => \App\Models\Message::whereNull('lu_at')->where('user_id', '!=', $user->id)
@@ -248,7 +229,6 @@ class AnnonceController extends Controller
         ]);
     }
 
-    // ---------- Outils ----------
 
     private function valider(Request $request, bool $creation): array
     {
@@ -276,7 +256,6 @@ class AnnonceController extends Controller
             'photos.*.max'          => 'Chaque photo doit faire 5 Mo maximum.',
         ]);
 
-        // Prix obligatoire pour une vente, ignoré pour un don ou un échange
         $type = $data['type'] ?? $request->route('annonce')?->type;
         if ($type === 'vente') {
             $prix = array_key_exists('prix', $data) ? $data['prix'] : $request->route('annonce')?->prix;

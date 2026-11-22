@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class Reservation extends Model
 {
-    public const DELAI_JOURS = 7; // SCRUM-32 : annulée si pas de confirmation sous 7 jours
+    public const DELAI_JOURS = 7; 
 
     protected $fillable = [
         'annonce_id', 'user_id', 'demande_id', 'statut', 'message',

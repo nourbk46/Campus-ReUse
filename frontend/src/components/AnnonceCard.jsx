@@ -3,7 +3,6 @@ import { ETATS, TYPES, prixTexte, depuis } from "../annonces";
 import FavoriButton from "./FavoriButton";
 import "../pages/Favoris.css";
 
-// SCRUM-15 : carte d'une annonce dans la liste
 export default function AnnonceCard({ annonce }) {
   const photo = annonce.photos?.[0]?.url;
 

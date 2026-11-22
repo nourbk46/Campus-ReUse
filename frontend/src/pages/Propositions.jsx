@@ -5,7 +5,6 @@ import { ETATS, TYPES, prixTexte, budgetTexte } from "../annonces";
 import "./Annonces.css";
 import "./Demandes.css";
 
-// SCRUM-25 : « Mes propositions », triées par score
 const CRITERES = [
   { cle: "mots_cles", label: "Mots-clés", max: 40 },
   { cle: "prix", label: "Prix", max: 30 },

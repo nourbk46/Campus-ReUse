@@ -6,7 +6,6 @@ use Closure;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
 
-// Autorise uniquement les comptes avec role = admin
 class EnsureAdmin
 {
     public function handle(Request $request, Closure $next): Response

@@ -9,10 +9,8 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 
-// Modération des annonces par l'administrateur (Sprint 5)
 class AnnonceController extends Controller
 {
-    // GET /api/admin/annonces?search=&statut=&type=&categorie=&page=
     public function index(Request $request)
     {
         $q = Annonce::query()
@@ -43,7 +41,6 @@ class AnnonceController extends Controller
         return response()->json($q->orderBy('created_at', $tri)->orderBy('id', $tri)->paginate(15)->withQueryString());
     }
 
-    // GET /api/admin/annonces/{annonce} : fiche complète
     public function show(Annonce $annonce)
     {
         $annonce->load(['user:id,name,prenom,email,etablissement,photo,bloque', 'categorie:id,nom,icone', 'photos'])
@@ -53,7 +50,6 @@ class AnnonceController extends Controller
         return response()->json($annonce);
     }
 
-    // DELETE /api/admin/annonces/{annonce} : suppression pour modération (le vendeur est prévenu)
     public function destroy(Request $request, Annonce $annonce)
     {
         $data = $request->validate(['motif' => ['nullable', 'string', 'max:500']]);
@@ -64,7 +60,7 @@ class AnnonceController extends Controller
         foreach ($annonce->photos as $photo) {
             Storage::disk('public')->delete($photo->chemin);
         }
-        $annonce->delete(); // photos, réservations, conversations : suppression en cascade
+        $annonce->delete(); 
 
         $lignes = ["Ton annonce « {$titre} » a été retirée par un administrateur car elle ne respecte pas les règles de Campus ReUse."];
         if (! empty($data['motif'])) {

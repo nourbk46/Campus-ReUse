@@ -6,7 +6,6 @@ use App\Models\Categorie;
 
 class CategorieController extends Controller
 {
-    // GET /api/categories (public) — pour les formulaires et les filtres
     public function index()
     {
         return response()->json(Categorie::orderBy('nom')->get(['id', 'nom', 'icone']));

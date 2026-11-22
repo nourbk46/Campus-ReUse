@@ -11,7 +11,6 @@ use Illuminate\Support\Facades\RateLimiter;
 
 class AuthController extends Controller
 {
-    // SCRUM-10 — US-01 : Créer un compte
     public function register(Request $request)
     {
         $data = $request->validate([
@@ -40,7 +39,6 @@ class AuthController extends Controller
         ], 201);
     }
 
-    // Lien du mail de confirmation (route nommée verification.verify)
     public function verifyEmail(Request $request, $id, $hash)
     {
         $user = User::findOrFail($id);
@@ -67,7 +65,6 @@ class AuthController extends Controller
         return response()->json(['message' => 'E-mail de confirmation renvoyé.']);
     }
 
-    // SCRUM-11 — US-02 : Se connecter (blocage 15 min après 5 échecs)
     public function login(Request $request)
     {
         $request->validate([
@@ -106,7 +103,6 @@ class AuthController extends Controller
         ]);
     }
 
-    // SCRUM-11 — US-02 : Se déconnecter
     public function logout(Request $request)
     {
         $request->user()->currentAccessToken()->delete();

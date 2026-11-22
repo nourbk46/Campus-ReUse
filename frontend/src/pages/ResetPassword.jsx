@@ -3,7 +3,6 @@ import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import api, { lireErreur } from "../api";
 import Field from "../components/Field";
 
-// SCRUM-12 — US-03 : page « Nouveau mot de passe » (ouverte depuis le lien de l'e-mail)
 export default function ResetPassword() {
   const [params] = useSearchParams();
   const navigate = useNavigate();

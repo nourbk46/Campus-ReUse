@@ -1,4 +1,3 @@
-/* Tableau de bord — utilisateur connecté (Home.jsx > Dashboard) */
 
 .db-page {
   --db-ink: #0f172a;
@@ -22,7 +21,6 @@
 .db-page *, .db-page *::before, .db-page *::after { box-sizing: border-box; }
 .db-page h1, .db-page h2, .db-page h3, .db-page p { margin: 0; }
 
-/* ---------- En-tête ---------- */
 .db-header {
   display: flex;
   align-items: flex-end;
@@ -71,7 +69,6 @@
   font-size: 14px;
 }
 
-/* ---------- Indicateurs ---------- */
 .db-kpis {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
@@ -110,7 +107,6 @@
 }
 .db-kpi-hint { color: var(--db-muted); font-size: 12.5px; }
 
-/* ---------- Grille ---------- */
 .db-grid {
   display: grid;
   grid-template-columns: minmax(0, 1.75fr) minmax(0, 1fr);
@@ -159,7 +155,6 @@
 }
 @keyframes db-shine { to { background-position: -200% 0; } }
 
-/* ---------- Graphique d'activité ---------- */
 .db-chart { display: grid; grid-template-columns: auto 1fr; gap: 10px; height: 220px; }
 .db-chart-axis {
   display: flex;

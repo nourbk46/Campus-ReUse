@@ -7,8 +7,7 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Password;
 use Illuminate\Support\Str;
 
-// SCRUM-12 — US-03 : Réinitialiser le mot de passe
-// Durée de validité du lien : config/auth.php → passwords.users.expire = 30
+
 class PasswordResetController extends Controller
 {
     public function forgot(Request $request)
@@ -17,7 +16,6 @@ class PasswordResetController extends Controller
 
         Password::sendResetLink($request->only('email'));
 
-        // Même réponse que l'e-mail existe ou non (on ne révèle pas les comptes existants)
         return response()->json([
             'message' => 'Si un compte existe pour cet e-mail, un lien valable 30 minutes a été envoyé.',
         ]);
@@ -35,10 +33,10 @@ class PasswordResetController extends Controller
             $request->only('email', 'password', 'password_confirmation', 'token'),
             function ($user, $password) {
                 $user->forceFill([
-                    'password'       => Hash::make($password), // crypté
+                    'password'       => Hash::make($password), 
                     'remember_token' => Str::random(60),
                 ])->save();
-                $user->tokens()->delete(); // déconnecte les anciennes sessions
+                $user->tokens()->delete(); 
             }
         );
 

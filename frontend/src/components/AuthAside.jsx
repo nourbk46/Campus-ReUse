@@ -1,7 +1,6 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
 
-// Panneau de gauche des pages Connexion / Inscription / Mot de passe oublié
 function Check() {
   return (
     <svg viewBox="0 0 20 20" width="20" height="20" fill="none" aria-hidden="true">
@@ -27,7 +26,6 @@ export default function AuthAside({ titre, texte, points }) {
         </ul>
       </div>
 
-      {/* Petit aperçu de l'application */}
       <div className="auth-apercu" aria-hidden="true">
         <div className="auth-apercu-carte">
           <span className="auth-apercu-photo">📚</span>

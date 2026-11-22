@@ -5,13 +5,11 @@ import Field from "../components/Field";
 import AuthAside, { MotDePasse } from "../components/AuthAside";
 import "./Login.css";
 
-// SCRUM-10 — US-01 : Créer un compte
 const vide = {
   name: "", prenom: "", email: "", password: "", password_confirmation: "",
   filiere: "", niveau: "", etablissement: "",
 };
 
-// Force du mot de passe (indication visuelle)
 function force(mdp) {
   let n = 0;
   if (mdp.length >= 8) n++;

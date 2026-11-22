@@ -15,8 +15,6 @@ class DemandeController extends Controller
     {
     }
 
-    // SCRUM-23 / SCRUM-47 : page « Mes demandes »
-    // GET /api/mes-demandes
     public function mesDemandes(Request $request)
     {
         $demandes = $request->user()->demandes()
@@ -31,7 +29,6 @@ class DemandeController extends Controller
         return response()->json($demandes);
     }
 
-    // GET /api/demandes/{demande} (auteur seulement)
     public function show(Demande $demande)
     {
         Gate::authorize('view', $demande);
@@ -39,15 +36,13 @@ class DemandeController extends Controller
         return response()->json($demande->load('categorie'));
     }
 
-    // SCRUM-22 : publier une demande
-    // POST /api/demandes
+
     public function store(Request $request)
     {
         $data = $this->valider($request, creation: true);
 
         $demande = $request->user()->demandes()->create($data + ['statut' => 'ouverte']);
 
-        // SCRUM-24 : matching déclenché à la publication
         $propositions = $this->matching->pourDemande($demande);
 
         return response()->json([
@@ -57,8 +52,6 @@ class DemandeController extends Controller
         ], 201);
     }
 
-    // SCRUM-23 : modifier sa demande
-    // PUT ou POST /api/demandes/{demande}
     public function update(Request $request, Demande $demande)
     {
         Gate::authorize('update', $demande); // 403 si ce n'est pas l'auteur
@@ -75,8 +68,6 @@ class DemandeController extends Controller
         ]);
     }
 
-    // SCRUM-47 : supprimer sa demande (ses propositions partent en cascade)
-    // DELETE /api/demandes/{demande}
     public function destroy(Demande $demande)
     {
         Gate::authorize('delete', $demande);

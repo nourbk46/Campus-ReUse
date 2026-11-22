@@ -5,8 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
-// Une proposition : une annonce qui correspond à une demande (table « matchs »)
-// (le nom « Match » est réservé en PHP, d'où MatchResult)
+
 class MatchResult extends Model
 {
     protected $table = 'matchs';

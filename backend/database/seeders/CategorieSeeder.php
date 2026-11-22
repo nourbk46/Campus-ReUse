@@ -5,7 +5,6 @@ namespace Database\Seeders;
 use App\Models\Categorie;
 use Illuminate\Database\Seeder;
 
-// php artisan db:seed --class=CategorieSeeder
 class CategorieSeeder extends Seeder
 {
     public function run(): void

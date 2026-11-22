@@ -1,13 +1,6 @@
-/* ==========================================================================
-   Espace étudiant — habillage commun (même style que l'accueil et le dashboard admin)
-   S'applique à : Dashboard, Annonces, Mes annonces, Mes demandes, Propositions,
-   Messages, Réservations, Favoris, Profil, formulaires.
-   ========================================================================== */
 
-/* Pages plus larges (avant : 960 px) */
 body .container { max-width: 1240px; }
 
-/* ---------- Bandeau d'en-tête coloré ---------- */
 main.annonces-page > .annonces-header,
 main.db-page > .db-header,
 main.profile-page .hero-main {
@@ -23,7 +16,6 @@ main.profile-page .hero-main {
   box-shadow: 0 18px 40px -22px rgba(30, 58, 138, .65);
   align-items: center;
 }
-/* petit motif décoratif */
 main.annonces-page > .annonces-header::after,
 main.db-page > .db-header::after {
   content: "♻";

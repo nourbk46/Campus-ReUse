@@ -92,6 +92,22 @@
     {
       "key": "emailVendeur",
       "value": ""
+    },
+    {
+      "key": "emailJetable",
+      "value": ""
+    },
+    {
+      "key": "tokenJetable",
+      "value": ""
+    },
+    {
+      "key": "jetableId",
+      "value": ""
+    },
+    {
+      "key": "annonceModId",
+      "value": ""
     }
   ],
   "item": [
@@ -4538,7 +4554,7 @@
       ]
     },
     {
-      "name": "6. Administration",
+      "name": "6. Sprint 5 - Administration",
       "item": [
         {
           "name": "L'admin ne peut pas déposer d'annonce (403)",
@@ -5487,6 +5503,400 @@
               }
             ],
             "url": "{{baseUrl}}/admin/annonces"
+          }
+        },
+        {
+          "name": "Préparation · Créer un étudiant à supprimer",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.collectionVariables.set(\"emailJetable\", \"jetable\" + (Number(pm.collectionVariables.get(\"runId\")) + 7) + \"@test.tn\");"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Code 201\", () => pm.response.to.have.status(201));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/register",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Jetable\",\n  \"prenom\": \"Postman\",\n  \"email\": \"{{emailJetable}}\",\n  \"password\": \"password123\",\n  \"password_confirmation\": \"password123\",\n  \"filiere\": \"Info\",\n  \"niveau\": \"L1\",\n  \"etablissement\": \"ISET Postman\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "Préparation · Connexion de l'étudiant à supprimer",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Code 200\", () => pm.response.to.have.status(200));",
+                  "const d = pm.response.json();",
+                  "pm.collectionVariables.set(\"tokenJetable\", d.token);",
+                  "pm.collectionVariables.set(\"jetableId\", d.user.id);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/login",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"{{emailJetable}}\",\n  \"password\": \"password123\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "Préparation · Il publie une annonce à modérer",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Code 201\", () => pm.response.to.have.status(201));",
+                  "pm.collectionVariables.set(\"annonceModId\", pm.response.json().annonce ? pm.response.json().annonce.id : pm.response.json().id);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenJetable}}"
+              }
+            ],
+            "url": "{{baseUrl}}/annonces",
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "titre",
+                  "value": "Annonce interdite Postman",
+                  "type": "text"
+                },
+                {
+                  "key": "categorie_id",
+                  "value": "{{categorieId}}",
+                  "type": "text"
+                },
+                {
+                  "key": "etat",
+                  "value": "bon",
+                  "type": "text"
+                },
+                {
+                  "key": "type",
+                  "value": "don",
+                  "type": "text"
+                },
+                {
+                  "key": "photos[]",
+                  "type": "file",
+                  "src": "photo-test.png"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Modération · Détail d'une annonce",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Code 200\", () => pm.response.to.have.status(200));",
+                  "const d = pm.response.json();",
+                  "const a = d.annonce || d;",
+                  "pm.test(\"Bonne annonce\", () => pm.expect(a.id).to.eql(Number(pm.collectionVariables.get(\"annonceModId\"))));",
+                  "pm.test(\"Vendeur inclus\", () => pm.expect(a).to.have.property(\"user\"));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenAdmin}}"
+              }
+            ],
+            "url": "{{baseUrl}}/admin/annonces/{{annonceModId}}"
+          }
+        },
+        {
+          "name": "Modération · Un étudiant ne peut pas retirer une annonce (403)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Code 403\", () => pm.response.to.have.status(403));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": "{{baseUrl}}/admin/annonces/{{annonceModId}}"
+          }
+        },
+        {
+          "name": "Modération · Retirer l'annonce avec un motif",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Code 200\", () => pm.response.to.have.status(200));",
+                  "pm.test(\"Message de confirmation\", () => pm.expect(pm.response.json().message).to.include(\"supprimée\"));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenAdmin}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/admin/annonces/{{annonceModId}}",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"motif\": \"Objet interdit sur Campus ReUse\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "Modération · L'annonce n'existe plus (404)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Code 404\", () => pm.response.to.have.status(404));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/annonces/{{annonceModId}}"
+          }
+        },
+        {
+          "name": "Admin · Supprimer son compte depuis le profil (refusé)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Code 403\", () => pm.response.to.have.status(403));",
+                  "pm.test(\"Message clair\", () => pm.expect(pm.response.json().message).to.include(\"administrateur\"));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenAdmin}}"
+              }
+            ],
+            "url": "{{baseUrl}}/profile"
+          }
+        },
+        {
+          "name": "SCRUM-51 · Supprimer un compte étudiant",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Code 200\", () => pm.response.to.have.status(200));",
+                  "pm.test(\"Message de confirmation\", () => pm.expect(pm.response.json().message).to.include(\"supprimé\"));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenAdmin}}"
+              }
+            ],
+            "url": "{{baseUrl}}/admin/users/{{jetableId}}"
+          }
+        },
+        {
+          "name": "SCRUM-51 · Le compte supprimé n'existe plus (404)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Code 404\", () => pm.response.to.have.status(404));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenAdmin}}"
+              }
+            ],
+            "url": "{{baseUrl}}/admin/users/{{jetableId}}"
+          }
+        },
+        {
+          "name": "SCRUM-51 · Il ne peut plus se connecter",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Connexion refusée\", () => pm.expect(pm.response.code).to.be.oneOf([401, 422]));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/login",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"{{emailJetable}}\",\n  \"password\": \"password123\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
           }
         }
       ]

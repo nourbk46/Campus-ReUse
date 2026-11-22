@@ -6,10 +6,7 @@ use Illuminate\Bus\Queueable;
 use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
 
-/**
- * SCRUM-34 — Notification par e-mail (nouveau message, réservation, échange…).
- * Envoyée seulement si l'étudiant a activé « notifications_email » dans son profil.
- */
+
 class CampusNotification extends Notification
 {
     use Queueable;
@@ -20,7 +17,7 @@ class CampusNotification extends Notification
         public string $sujet,
         public array $lignes,
         public ?string $boutonTexte = null,
-        public ?string $lien = null,          // chemin côté React, ex. /messages/3
+        public ?string $lien = null,       
     ) {
     }
 

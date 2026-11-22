@@ -1,4 +1,3 @@
-// Libellés partagés par les pages d'annonces (Sprint 2)
 export const ETATS = { neuf: "Neuf", tres_bon: "Très bon état", bon: "Bon état", use: "Usé" };
 export const TYPES = { don: "Don", echange: "Échange", vente: "Vente" };
 export const STATUTS = { disponible: "Disponible", reservee: "Réservée", cedee: "Cédée" };
@@ -21,7 +20,6 @@ export function depuis(date) {
   return new Date(date).toLocaleDateString("fr-FR");
 }
 
-// Sprint 3 — demandes
 export const STATUTS_DEMANDE = { ouverte: "Ouverte", cloturee: "Clôturée" };
 export const ETATS_MIN = { use: "Usé ou mieux", bon: "Bon état ou mieux", tres_bon: "Très bon état ou mieux", neuf: "Neuf uniquement" };
 

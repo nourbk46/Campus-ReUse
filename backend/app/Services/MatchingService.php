@@ -8,18 +8,6 @@ use App\Models\MatchResult;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Str;
 
-/**
- * SCRUM-24 — Algorithme de matching demandes ↔ annonces.
- *
- * 1. Filtres (éliminatoires) : même catégorie, annonce disponible, annonce d'un autre étudiant,
- *    prix ≤ budget (un don ou un échange vaut 0), état ≥ état minimum demandé.
- * 2. Score sur 100 :
- *      mots-clés      40 pts  (mots de la demande retrouvés dans l'annonce)
- *      prix           30 pts  (moins cher que le budget = plus de points)
- *      état           20 pts  (neuf 20, très bon 15, bon 10, usé 5)
- *      établissement  10 pts  (même établissement que le demandeur)
- * 3. Seules les correspondances avec un score ≥ 50 sont enregistrées.
- */
 class MatchingService
 {
     public const SEUIL = 50;
@@ -32,9 +20,7 @@ class MatchingService
         'donne', 'objet', 'aux', 'mon', 'mes', 'son', 'ses', 'leur', 'cette', 'tout', 'tous',
     ];
 
-    // ---------- Déclencheurs ----------
 
-    /** Recalcule les propositions d'une demande (création ou modification de la demande). */
     public function pourDemande(Demande $demande): int
     {
         MatchResult::where('demande_id', $demande->id)->delete();
@@ -49,7 +35,6 @@ class MatchingService
         return $this->enregistrer($annonces->map(fn ($a) => [$demande, $a]));
     }
 
-    /** Recalcule les correspondances d'une annonce (publication ou modification de l'annonce). */
     public function pourAnnonce(Annonce $annonce): int
     {
         MatchResult::where('annonce_id', $annonce->id)->delete();
@@ -69,7 +54,6 @@ class MatchingService
         return $this->enregistrer($demandes->map(fn ($d) => [$d, $annonce]));
     }
 
-    // ---------- Filtres et score ----------
 
     public function passeLesFiltres(Demande $demande, Annonce $annonce): bool
     {
@@ -123,7 +107,6 @@ class MatchingService
         ];
     }
 
-    // ---------- Outils ----------
 
     private function annoncesCandidates(Demande $demande): Collection
     {
@@ -168,7 +151,6 @@ class MatchingService
         return trim(Str::lower(Str::ascii($texte)));
     }
 
-    /** Mots significatifs (≥ 3 lettres, sans accents ni mots vides). */
     private function mots(?string $texte): Collection
     {
         return collect(preg_split('/[^a-z0-9]+/', $this->normaliser($texte ?? '')))
@@ -178,7 +160,6 @@ class MatchingService
             ->values();
     }
 
-    /** Un mot est trouvé s'il est identique ou si l'un commence par l'autre (calc ↔ calculatrice). */
     private function contient(Collection $mots, string $mot): bool
     {
         return $mots->contains(fn ($m) => $m === $mot

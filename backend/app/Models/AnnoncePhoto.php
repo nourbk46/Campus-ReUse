@@ -15,7 +15,6 @@ class AnnoncePhoto extends Model
 
     protected $appends = ['url'];
 
-    // URL relative : passe par le proxy Vite (/storage → Laravel)
     public function getUrlAttribute(): string
     {
         return '/storage/' . $this->chemin;

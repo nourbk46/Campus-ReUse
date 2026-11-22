@@ -5,7 +5,6 @@ import Field from "../components/Field";
 import AuthAside from "../components/AuthAside";
 import "./Login.css";
 
-// SCRUM-12 — US-03 : page « Mot de passe oublié »
 export default function ForgotPassword() {
   const [email, setEmail] = useState("");
   const [message, setMessage] = useState("");

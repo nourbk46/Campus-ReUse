@@ -20,7 +20,6 @@ export function AuthProvider({ children }) {
     else localStorage.removeItem("user");
   };
 
-  // SCRUM-11 : connexion
   const login = async (email, password) => {
     const { data } = await api.post("/login", { email, password });
     localStorage.setItem("token", data.token);
@@ -28,12 +27,10 @@ export function AuthProvider({ children }) {
     return data.user;
   };
 
-  // SCRUM-11 : déconnexion
   const logout = async () => {
     try {
       await api.post("/logout");
     } catch {
-      /* token déjà invalide : on déconnecte quand même */
     }
     localStorage.removeItem("token");
     saveUser(null);

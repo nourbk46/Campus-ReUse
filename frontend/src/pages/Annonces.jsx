@@ -6,8 +6,7 @@ import { ETATS, TYPES } from "../annonces";
 import { useAuth } from "../context/AuthContext";
 import "./Annonces.css";
 
-// SCRUM-15 (liste) — SCRUM-20 (recherche par mot-clé) — SCRUM-21 (filtres et tri)
-// Les filtres sont gardés dans l'URL : /annonces?q=livre&type=don&tri=prix_asc
+
 const FILTRES = ["q", "categorie", "type", "etat", "prix_min", "prix_max", "tri", "page"];
 
 export default function Annonces() {
@@ -23,7 +22,6 @@ export default function Annonces() {
     api.get("/categories").then(({ data }) => setCategories(data)).catch(() => {});
   }, []);
 
-  // Recharge la liste à chaque changement des paramètres de l'URL
   useEffect(() => {
     const query = {};
     FILTRES.forEach((k) => params.get(k) && (query[k] = params.get(k)));

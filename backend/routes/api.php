@@ -16,84 +16,74 @@ use App\Http\Controllers\PasswordResetController;
 use App\Http\Controllers\ProfileController;
 use Illuminate\Support\Facades\Route;
 
-// ---------- Routes publiques ----------
-Route::post('/register', [AuthController::class, 'register']);                 // SCRUM-10
-Route::post('/login', [AuthController::class, 'login']);                       // SCRUM-11
-Route::post('/forgot-password', [PasswordResetController::class, 'forgot']);   // SCRUM-12
-Route::post('/reset-password', [PasswordResetController::class, 'reset']);     // SCRUM-12
+Route::post('/register', [AuthController::class, 'register']);                 
+Route::post('/login', [AuthController::class, 'login']);                       
+Route::post('/forgot-password', [PasswordResetController::class, 'forgot']);   
+Route::post('/reset-password', [PasswordResetController::class, 'reset']);    
 
-// Sprint 2 — consultation publique des annonces
 Route::get('/categories', [CategorieController::class, 'index']);
-Route::get('/annonces', [AnnonceController::class, 'index']);                  // SCRUM-15, 20, 21
+Route::get('/annonces', [AnnonceController::class, 'index']);                 
 Route::get('/annonces/{annonce}', [AnnonceController::class, 'show'])->whereNumber('annonce');
 
-// Lien envoyé dans l'e-mail de confirmation (le nom de route est imposé par Laravel)
 Route::get('/email/verify/{id}/{hash}', [AuthController::class, 'verifyEmail'])
     ->middleware('signed')
     ->name('verification.verify');
 
-// ---------- Routes protégées (token Sanctum) ----------
 Route::middleware('auth:sanctum')->group(function () {
-    Route::post('/logout', [AuthController::class, 'logout']);                 // SCRUM-11
+    Route::post('/logout', [AuthController::class, 'logout']);                
     Route::get('/me', [AuthController::class, 'me']);
     Route::post('/email/resend', [AuthController::class, 'resendVerification']);
 
-    Route::get('/profile', [ProfileController::class, 'show']);                // SCRUM-13
-    Route::post('/profile', [ProfileController::class, 'update']);             // SCRUM-44
-    Route::delete('/profile', [ProfileController::class, 'destroy']);          // SCRUM-14
+    Route::get('/profile', [ProfileController::class, 'show']);               
+    Route::post('/profile', [ProfileController::class, 'update']);          
+    Route::delete('/profile', [ProfileController::class, 'destroy']);         
 
-    // Sprint 2 — gestion de ses annonces
     Route::get('/dashboard', [AnnonceController::class, 'dashboard']);
-    Route::get('/mes-annonces', [AnnonceController::class, 'mesAnnonces']);   // SCRUM-18, 46
-    Route::post('/annonces', [AnnonceController::class, 'store'])->middleware('etudiant');             // SCRUM-17
-    Route::match(['post', 'put'], '/annonces/{annonce}', [AnnonceController::class, 'update'])->whereNumber('annonce'); // SCRUM-18
-    Route::delete('/annonces/{annonce}', [AnnonceController::class, 'destroy'])->whereNumber('annonce');                // SCRUM-46
+    Route::get('/mes-annonces', [AnnonceController::class, 'mesAnnonces']);  
+    Route::post('/annonces', [AnnonceController::class, 'store'])->middleware('etudiant');     
+    Route::match(['post', 'put'], '/annonces/{annonce}', [AnnonceController::class, 'update'])->whereNumber('annonce'); 
+    Route::delete('/annonces/{annonce}', [AnnonceController::class, 'destroy'])->whereNumber('annonce');               
 
-    // Sprint 3 — demandes et matching
-    Route::get('/mes-demandes', [DemandeController::class, 'mesDemandes']);   // SCRUM-23, 47
-    Route::post('/demandes', [DemandeController::class, 'store'])->middleware('etudiant');             // SCRUM-22
+    Route::get('/mes-demandes', [DemandeController::class, 'mesDemandes']);  
+    Route::post('/demandes', [DemandeController::class, 'store'])->middleware('etudiant');          
     Route::get('/demandes/{demande}', [DemandeController::class, 'show'])->whereNumber('demande');
-    Route::match(['post', 'put'], '/demandes/{demande}', [DemandeController::class, 'update'])->whereNumber('demande'); // SCRUM-23
-    Route::delete('/demandes/{demande}', [DemandeController::class, 'destroy'])->whereNumber('demande');                // SCRUM-47
-    Route::get('/propositions', [PropositionController::class, 'index']);     // SCRUM-25
+    Route::match(['post', 'put'], '/demandes/{demande}', [DemandeController::class, 'update'])->whereNumber('demande');
+    Route::delete('/demandes/{demande}', [DemandeController::class, 'destroy'])->whereNumber('demande');             
+    Route::get('/propositions', [PropositionController::class, 'index']);   
 
-    // Sprint 4 — messagerie
     Route::get('/conversations', [ConversationController::class, 'index']);
     Route::get('/messages/non-lus', [ConversationController::class, 'nonLus']);
-    Route::post('/conversations', [ConversationController::class, 'store'])->middleware('etudiant');                              // SCRUM-28
+    Route::post('/conversations', [ConversationController::class, 'store'])->middleware('etudiant');                            
     Route::get('/conversations/{conversation}', [ConversationController::class, 'show'])->whereNumber('conversation');
     Route::post('/conversations/{conversation}/messages', [ConversationController::class, 'envoyer'])->whereNumber('conversation');
 
-    // Sprint 4 — réservations et échange
-    Route::post('/annonces/{annonce}/reserver', [ReservationController::class, 'store'])->whereNumber('annonce')->middleware('etudiant'); // SCRUM-30
-    Route::get('/reservations/recues', [ReservationController::class, 'recues']);                       // SCRUM-31
+    Route::post('/annonces/{annonce}/reserver', [ReservationController::class, 'store'])->whereNumber('annonce')->middleware('etudiant');
+    Route::get('/reservations/recues', [ReservationController::class, 'recues']);                    
     Route::get('/reservations/envoyees', [ReservationController::class, 'envoyees']);
-    Route::post('/reservations/{reservation}/accepter', [ReservationController::class, 'accepter'])->whereNumber('reservation');   // SCRUM-31
-    Route::post('/reservations/{reservation}/refuser', [ReservationController::class, 'refuser'])->whereNumber('reservation');     // SCRUM-48
+    Route::post('/reservations/{reservation}/accepter', [ReservationController::class, 'accepter'])->whereNumber('reservation'); 
+    Route::post('/reservations/{reservation}/refuser', [ReservationController::class, 'refuser'])->whereNumber('reservation');     
     Route::post('/reservations/{reservation}/annuler', [ReservationController::class, 'annuler'])->whereNumber('reservation');
-    Route::post('/reservations/{reservation}/confirmer', [ReservationController::class, 'confirmer'])->whereNumber('reservation'); // SCRUM-32
+    Route::post('/reservations/{reservation}/confirmer', [ReservationController::class, 'confirmer'])->whereNumber('reservation');
 
-    // Favoris (EF-12)
     Route::get('/favoris', [FavoriController::class, 'index']);
     Route::get('/favoris/ids', [FavoriController::class, 'ids']);
     Route::post('/annonces/{annonce}/favori', [FavoriController::class, 'store'])->whereNumber('annonce')->middleware('etudiant');
     Route::delete('/annonces/{annonce}/favori', [FavoriController::class, 'destroy'])->whereNumber('annonce');
 });
 
-// ---------- Routes administrateur (token + rôle admin) ----------
 Route::middleware(['auth:sanctum', 'admin'])->prefix('admin')->group(function () {
-    Route::get('/users', [AdminUserController::class, 'index']);               // SCRUM-38
-    Route::get('/users/{user}', [AdminUserController::class, 'show']);         // SCRUM-38
-    Route::post('/users/{user}/bloquer', [AdminUserController::class, 'bloquer']);     // SCRUM-49
-    Route::post('/users/{user}/debloquer', [AdminUserController::class, 'debloquer']); // SCRUM-50
-    Route::delete('/users/{user}', [AdminUserController::class, 'destroy']);           // SCRUM-51
+    Route::get('/users', [AdminUserController::class, 'index']);            
+    Route::get('/users/{user}', [AdminUserController::class, 'show']);         
+    Route::post('/users/{user}/bloquer', [AdminUserController::class, 'bloquer']);     
+    Route::post('/users/{user}/debloquer', [AdminUserController::class, 'debloquer']);
+    Route::delete('/users/{user}', [AdminUserController::class, 'destroy']);          
 
     Route::get('/categories', [AdminCategorieController::class, 'index']);
-    Route::post('/categories', [AdminCategorieController::class, 'store']);                  // SCRUM-39
-    Route::put('/categories/{categorie}', [AdminCategorieController::class, 'update']);      // SCRUM-52
-    Route::delete('/categories/{categorie}', [AdminCategorieController::class, 'destroy']);  // SCRUM-53
+    Route::post('/categories', [AdminCategorieController::class, 'store']);                  
+    Route::put('/categories/{categorie}', [AdminCategorieController::class, 'update']);      
+    Route::delete('/categories/{categorie}', [AdminCategorieController::class, 'destroy']);  
 
-    Route::get('/annonces', [AdminAnnonceController::class, 'index']);                       // modération des annonces
+    Route::get('/annonces', [AdminAnnonceController::class, 'index']);                   
     Route::get('/annonces/{annonce}', [AdminAnnonceController::class, 'show'])->whereNumber('annonce');
     Route::delete('/annonces/{annonce}', [AdminAnnonceController::class, 'destroy'])->whereNumber('annonce');
 

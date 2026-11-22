@@ -1,7 +1,6 @@
 import { Navigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 
-// Bloque l'accès aux pages privées ; role="admin" limite aux administrateurs
 export default function ProtectedRoute({ children, role }) {
   const { user } = useAuth();
 

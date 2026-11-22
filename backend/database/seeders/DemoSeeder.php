@@ -13,16 +13,7 @@ use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Storage;
 
-/**
- * Données de démonstration : php artisan db:seed --class=DemoSeeder
- *
- * - 6 étudiants de démo (mot de passe : demo1234), e-mails en @demo.tn
- * - 18 annonces avec photos, réparties sur 8 semaines et plusieurs statuts
- * - Pour CHAQUE étudiant déjà inscrit (hors démo) : une annonce, 5 favoris, des demandes avec propositions,
- *   des conversations (avec messages non lus) et des réservations (reçue, acceptée, terminée).
- *
- * Relançable : les données de démo précédentes sont supprimées puis recréées.
- */
+
 class DemoSeeder extends Seeder
 {
     private const TITRES_REELS = ['Sac à dos Eastpak'];
@@ -33,12 +24,10 @@ class DemoSeeder extends Seeder
         $this->call(CategorieSeeder::class);
         $cat = Categorie::pluck('id', 'nom');
 
-        // ---------- Nettoyage des données de démo précédentes ----------
-        User::where('email', 'like', '%@demo.tn')->get()->each->delete(); // cascade : annonces, demandes, messages, réservations
+        User::where('email', 'like', '%@demo.tn')->get()->each->delete(); 
         Annonce::whereIn('titre', self::TITRES_REELS)->get()->each->delete();
         Demande::whereIn('titre', self::DEMANDES_REELLES)->get()->each->delete();
 
-        // ---------- Étudiants de démo ----------
         $u = [];
         foreach ([
             ['ghada', 'Ben Ali', 'Ghada', 'ISET Mahdia', 'Développement des systèmes d\'information', 'L3'],
@@ -56,8 +45,6 @@ class DemoSeeder extends Seeder
             ]);
         }
 
-        // ---------- Annonces de démo ----------
-        // [propriétaire, catégorie, titre, description, état, type, prix, statut, il y a N jours, photo]
         $annonces = [
             ['ghada', 'Informatique', 'Calculatrice graphique TI-83 Premium CE', 'Écran couleur, câble USB et housse inclus. Parfaite pour les maths et la physique.', 'tres_bon', 'vente', 45, 'disponible', 2, 'calculatrice-ti83'],
             ['sami', 'Livres & cours', 'Livre Analyse L1 — Dunod', 'Quelques annotations au crayon, sinon comme neuf.', 'bon', 'don', null, 'disponible', 5, 'livre-analyse'],
@@ -83,25 +70,20 @@ class DemoSeeder extends Seeder
             $a[$photo] = $this->annonce($u[$login], $cat[$categorie], $titre, $desc, $etat, $type, $prix, $statut, $jours, $photo);
         }
 
-        // Une annonce cédée et sa réservation terminée entre étudiants de démo (historique)
         $this->reservation($a['disque-dur'], $u['karim'], 'terminee', 40);
         $a['disque-dur']->update(['statut' => 'cedee']);
 
-        // Favoris entre étudiants de démo
         $u['sami']->favoris()->attach([$a['blouse']->id, $a['lampe']->id]);
         $u['yasmine']->favoris()->attach([$a['chaise']->id, $a['calculatrice-ti83']->id]);
         $u['karim']->favoris()->attach([$a['cours-algo']->id]);
 
-        // Conversation entre deux étudiants de démo
         $this->conversation($a['raquette'], $u['amine'], [
             [$u['amine'], 'Salut ! La raquette est toujours dispo ?', 30, true],
             [$u['sami'], 'Oui, tu peux passer à l\'ISET mardi.', 29, true],
         ]);
 
-        // ---------- Données liées aux étudiants déjà inscrits ----------
         $reels = User::where('role', 'etudiant')->where('email', 'not like', '%@demo.tn')->get();
         foreach ($reels as $i => $moi) {
-            // Mon annonce + une réservation reçue en attente + une conversation avec un message non lu
             $sac = $this->annonce($moi, $cat['Autre'], 'Sac à dos Eastpak', 'Bon état, plusieurs poches. Idéal pour les cours.', 'bon', 'vente', 25, 'disponible', 7, 'sac-a-dos');
             $this->reservation($sac, $u['sami'], 'en_attente', 1, 'Je peux passer le récupérer jeudi ?');
             $this->conversation($sac, $u['sami'], [
@@ -110,13 +92,11 @@ class DemoSeeder extends Seeder
                 [$u['sami'], 'Super, je viens de le réserver 🙂', 1, false],
             ]);
 
-            // Je contacte Ghada pour sa calculatrice (sa réponse n'est pas encore lue)
             $this->conversation($a['calculatrice-ti83'], $moi, [
                 [$moi, 'Bonjour, la calculatrice fonctionne bien ? Le câble est fourni ?', 26, true],
                 [$u['ghada'], 'Oui parfaitement, avec le câble USB et la housse !', 3, false],
             ]);
 
-            // Mes demandes → propositions calculées par le matching
             foreach ([
                 ['Calculatrice graphique', 'Calculatrice graphique ou scientifique pour le cours de maths', 'Informatique', 50, 'bon'],
                 ['Livres de cours', 'Livres ou polycopiés pour réviser', 'Livres & cours', 0, 'use'],
@@ -129,12 +109,10 @@ class DemoSeeder extends Seeder
                 app(MatchingService::class)->pourDemande($d);
             }
 
-            // Mes favoris (EF-12)
             foreach (['ecouteurs', 'chaise', 'clavier', 'plante', 'raquette'] as $j => $cle) {
                 $moi->favoris()->attach($a[$cle]->id, ['created_at' => now()->subDays($j + 1), 'updated_at' => now()->subDays($j + 1)]);
             }
 
-            // Pour le premier étudiant : une réservation acceptée (à confirmer) et un échange terminé
             if ($i === 0) {
                 $r = $this->reservation($a['lampe'], $moi, 'acceptee', 2);
                 $r->update(['confirme_vendeur_at' => now()->subDay()]);   // Amine a déjà confirmé la remise
@@ -149,13 +127,11 @@ class DemoSeeder extends Seeder
             }
         }
 
-        // Les demandes déjà existantes profitent aussi des nouvelles annonces
         Demande::where('statut', 'ouverte')->get()->each(fn ($d) => app(MatchingService::class)->pourDemande($d));
 
         $this->command?->info(count($annonces) . ' annonces de démo, 6 étudiants (mot de passe : demo1234), données liées à ' . $reels->count() . ' étudiant(s) inscrit(s).');
     }
 
-    // ---------- Outils ----------
 
     private function annonce(User $user, int $categorieId, string $titre, string $desc, string $etat, string $type, ?float $prix, string $statut, int $jours, string $photo): Annonce
     {

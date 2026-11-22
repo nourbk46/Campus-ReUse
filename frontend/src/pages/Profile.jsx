@@ -7,7 +7,6 @@ import NotificationsPanel from "../components/NotificationsPanel";
 import "./Echanges.css";
 import "./Profile.css";
 
-// SCRUM-13 (consulter) — SCRUM-44 (modifier) — SCRUM-14 (supprimer)
 export default function Profile() {
   const { saveUser, clearSession } = useAuth();
   const navigate = useNavigate();
@@ -22,16 +21,13 @@ export default function Profile() {
   const [confirmSuppr, setConfirmSuppr] = useState(false);
   const [loading, setLoading] = useState(false);
 
-  // SCRUM-13 : chargement du profil
   useEffect(() => {
     api.get("/profile").then(({ data }) => {
       setProfil(data);
       saveUser(data);
     });
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // Fermer la fenêtre de confirmation avec Échap
   useEffect(() => {
     if (!confirmSuppr) return;
     const onKey = (e) => e.key === "Escape" && setConfirmSuppr(false);
@@ -39,7 +35,6 @@ export default function Profile() {
     return () => window.removeEventListener("keydown", onKey);
   }, [confirmSuppr]);
 
-  // Libérer l'URL d'aperçu quand elle change
   useEffect(() => () => apercu && URL.revokeObjectURL(apercu), [apercu]);
 
   const ouvrirEdition = () => {
@@ -71,7 +66,6 @@ export default function Profile() {
     setApercu(URL.createObjectURL(f));
   };
 
-  // SCRUM-44 : enregistrement (FormData pour l'upload de la photo)
   const onSubmit = async (e) => {
     e.preventDefault();
     if (form.password && form.password.length < 8)
@@ -107,7 +101,6 @@ export default function Profile() {
     }
   };
 
-  // SCRUM-14 : suppression du compte après confirmation
   const supprimerCompte = async () => {
     try {
       await api.delete("/profile");

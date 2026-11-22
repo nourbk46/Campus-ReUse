@@ -11,7 +11,6 @@ use Illuminate\Support\Facades\Storage;
 use Tests\Concerns\FausseImage;
 use Tests\TestCase;
 
-// Lancer : php artisan test --filter=Sprint2Test
 class Sprint2Test extends TestCase
 {
     use RefreshDatabase, FausseImage;
@@ -53,7 +52,6 @@ class Sprint2Test extends TestCase
         ], ['Accept' => 'application/json']);
     }
 
-    // ---- SCRUM-15 : liste ----
     public function test_liste_affiche_seulement_les_disponibles_plus_recentes_d_abord(): void
     {
         $u = $this->etudiant();
@@ -67,7 +65,6 @@ class Sprint2Test extends TestCase
         $this->assertEquals(['Récente', 'Ancienne'], $titres->all());
     }
 
-    // ---- SCRUM-17 : publier ----
     public function test_publier_une_annonce_avec_photos(): void
     {
         $u = $this->etudiant();
@@ -107,7 +104,6 @@ class Sprint2Test extends TestCase
         $this->postJson('/api/annonces', [])->assertStatus(401);
     }
 
-    // ---- SCRUM-18 : modifier ----
     public function test_le_proprietaire_peut_modifier_son_annonce(): void
     {
         $u = $this->etudiant();
@@ -137,7 +133,6 @@ class Sprint2Test extends TestCase
         ])->assertStatus(422)->assertJsonValidationErrors(['photos']);
     }
 
-    // ---- SCRUM-46 : supprimer ----
     public function test_le_proprietaire_peut_supprimer_son_annonce(): void
     {
         $u = $this->etudiant();
@@ -158,7 +153,6 @@ class Sprint2Test extends TestCase
         $this->actingAs($u, 'sanctum')->getJson('/api/mes-annonces')->assertOk()->assertJsonCount(2);
     }
 
-    // ---- SCRUM-20 : recherche ----
     public function test_recherche_par_mot_cle_dans_titre_et_description(): void
     {
         $u = $this->etudiant();
@@ -170,7 +164,6 @@ class Sprint2Test extends TestCase
         $this->getJson('/api/annonces?q=introuvable')->assertOk()->assertJsonPath('total', 0);
     }
 
-    // ---- SCRUM-21 : filtres et tri ----
     public function test_filtres_categorie_type_etat_prix_et_tri_par_prix(): void
     {
         $u = $this->etudiant();
@@ -196,7 +189,6 @@ class Sprint2Test extends TestCase
         $this->assertDatabaseMissing('annonces', ['id' => $a->id]);
     }
 
-    // ---- Tableau de bord ----
     public function test_dashboard_renvoie_mes_statistiques(): void
     {
         $u = $this->etudiant();

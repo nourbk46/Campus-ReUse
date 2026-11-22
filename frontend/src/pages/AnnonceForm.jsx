@@ -4,20 +4,19 @@ import api, { lireErreur } from "../api";
 import { ETATS, TYPES } from "../annonces";
 import "./Annonces.css";
 
-// SCRUM-17 (publier) et SCRUM-18 (modifier) : le même formulaire
 const MAX_PHOTOS = 5;
-const MAX_TAILLE = 5 * 1024 * 1024; // 5 Mo
+const MAX_TAILLE = 5 * 1024 * 1024; 
 
 export default function AnnonceForm() {
-  const { id } = useParams();            // présent en modification
+  const { id } = useParams();           
   const edition = Boolean(id);
   const navigate = useNavigate();
 
   const [categories, setCategories] = useState([]);
   const [form, setForm] = useState({ titre: "", description: "", categorie_id: "", etat: "", type: "", prix: "", statut: "disponible" });
-  const [anciennes, setAnciennes] = useState([]);     // photos déjà en ligne
-  const [supprimees, setSupprimees] = useState([]);   // ids à retirer
-  const [nouvelles, setNouvelles] = useState([]);     // { file, url }
+  const [anciennes, setAnciennes] = useState([]);    
+  const [supprimees, setSupprimees] = useState([]); 
+  const [nouvelles, setNouvelles] = useState([]);    
   const [errors, setErrors] = useState({});
   const [message, setMessage] = useState("");
   const [loading, setLoading] = useState(edition);
@@ -37,7 +36,6 @@ export default function AnnonceForm() {
     }
   }, [id, edition]);
 
-  // Libère les aperçus en quittant la page
   useEffect(() => () => nouvelles.forEach((n) => URL.revokeObjectURL(n.url)), [nouvelles]);
 
   const onChange = (e) => setForm({ ...form, [e.target.name]: e.target.value });
@@ -100,7 +98,6 @@ export default function AnnonceForm() {
     } catch (error) {
       const { message, errors } = lireErreur(error);
       setMessage(error.response?.status === 403 ? "Vous ne pouvez modifier que vos propres annonces." : message);
-      // regroupe les erreurs photos.0, photos.1… sous « photos »
       const e2 = {};
       Object.entries(errors).forEach(([k, v]) => { e2[k.startsWith("photos") ? "photos" : k] = v[0]; });
       setErrors(e2);

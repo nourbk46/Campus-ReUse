@@ -3,7 +3,6 @@ import { Link, useSearchParams } from "react-router-dom";
 import api, { lireErreur } from "../../api";
 import { useAuth } from "../../context/AuthContext";
 
-// SCRUM-38 consulter · SCRUM-49 bloquer · SCRUM-50 débloquer · SCRUM-51 supprimer
 function Statut({ u }) {
   if (u.role === "admin") return <span className="adm-badge adm-badge-admin">Admin</span>;
   return u.bloque ? <span className="adm-badge adm-badge-bloque">Bloqué</span> : <span className="adm-badge adm-badge-actif">Actif</span>;
@@ -21,7 +20,7 @@ export default function AdminUsers() {
   const [recherche, setRecherche] = useState(params.get("search") || "");
   const [message, setMessage] = useState({ texte: "", type: "" });
   const [fiche, setFiche] = useState(null);
-  const [confirmer, setConfirmer] = useState(null); // { u, action }
+  const [confirmer, setConfirmer] = useState(null); 
   const [envoi, setEnvoi] = useState(false);
 
   const charger = () => {

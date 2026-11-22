@@ -4,7 +4,6 @@ import api, { lireErreur } from "../api";
 import { STATUTS, TYPES, prixTexte, depuis } from "../annonces";
 import "./Annonces.css";
 
-// SCRUM-18 (modifier) et SCRUM-46 (supprimer) : page « Mes annonces »
 export default function MesAnnonces() {
   const [annonces, setAnnonces] = useState(null);
   const [message, setMessage] = useState({ texte: "", type: "" });
@@ -17,7 +16,6 @@ export default function MesAnnonces() {
 
   useEffect(() => { charger(); }, []);
 
-  // Échap ferme la fenêtre de confirmation
   useEffect(() => {
     if (!aSupprimer) return;
     const onKey = (e) => e.key === "Escape" && setASupprimer(null);
